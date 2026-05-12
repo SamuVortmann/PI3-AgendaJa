@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'cssprimeira_pg.dart';
+import 'login_pg.dart';
 
 class PaginaInicial extends StatelessWidget {
   const PaginaInicial({super.key});
@@ -19,14 +20,14 @@ class PaginaInicial extends StatelessWidget {
 
               Image.asset(
                 'assets/logo.png',
-                width: 300,
+                width: 220,
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 25),
 
               SizedBox(
                 width: 260,
-                height: 40,
+                height: 45,
 
                 child: ElevatedButton(
                   onPressed: () {},
@@ -49,10 +50,19 @@ class PaginaInicial extends StatelessWidget {
 
               SizedBox(
                 width: 260,
-                height: 40,
+                height: 45,
 
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPg(),
+                      ),
+                    );
+
+                  },
 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
