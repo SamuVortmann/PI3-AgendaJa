@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class CssPaginaInicial {
 
-  static const Color background = Color(0xFF001F3D);
+  static const Color background = Color(0xFF111934);
 
   static const TextStyle logoText = TextStyle(
     color: Colors.white,

@@ -37,7 +37,7 @@ class _CadastroPageState extends State<CadastroPage> {
   height: 140,
 
   decoration: const BoxDecoration(
-    color: Color(0xFF06153D),
+    color: Color(0xFF111934),
 
     borderRadius: BorderRadius.only(
       bottomLeft: Radius.circular(60),
@@ -136,7 +136,7 @@ class _CadastroPageState extends State<CadastroPage> {
                               value: 'cliente',
                               groupValue: tipoConta,
 
-                              activeColor: const Color(0xFF06153D),
+                              activeColor: const Color(0xFF111934),
 
                               onChanged: (value) {
                                 setState(() {
@@ -159,7 +159,7 @@ class _CadastroPageState extends State<CadastroPage> {
                               value: 'empresa',
                               groupValue: tipoConta,
 
-                              activeColor: const Color(0xFF06153D),
+                              activeColor: const Color(0xFF111934),
 
                               onChanged: (value) {
                                 setState(() {
@@ -205,7 +205,7 @@ class _CadastroPageState extends State<CadastroPage> {
                         'CONTINUAR ➜',
 
                         style: TextStyle(
-                          color: Color(0xFF06153D),
+                          color: Color(0xFF111934),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),

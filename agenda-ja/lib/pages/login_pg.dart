@@ -18,7 +18,7 @@ class LoginPg extends StatelessWidget {
               height: 200,
 
               decoration: const BoxDecoration(
-                color: Color(0xFF001F3D),
+                color: Color(0xFF111934),
 
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(60),
@@ -137,7 +137,7 @@ class LoginPg extends StatelessWidget {
                       onPressed: () {},
 
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF001F3D),
+                        backgroundColor: const Color(0xFF111934),
                         foregroundColor: Colors.white,
 
                         shape: RoundedRectangleBorder(
@@ -196,7 +196,7 @@ class LoginPg extends StatelessWidget {
                           'CADASTRE-SE',
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
-                            color: Color(0xFF001F3D),
+                            color: Color(0xFF111934),
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),

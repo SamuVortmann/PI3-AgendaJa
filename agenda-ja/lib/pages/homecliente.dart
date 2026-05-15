@@ -93,7 +93,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
               ),
 
               decoration: const BoxDecoration(
-                color: Color(0xFF06153D),
+                color: Color(0xFF111934),
 
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(45),
@@ -149,7 +149,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: const Color(0xFF06153D),
+                        color: const Color(0xFF111934),
                       ),
 
                       borderRadius: BorderRadius.circular(14),
@@ -170,7 +170,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                         Icon(
                           Icons.search,
-                          color: Color(0xFF06153D),
+                          color: Color(0xFF111934),
                         )
                       ],
                     ),
@@ -188,7 +188,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                       onPressed: () {},
 
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF06153D),
+                        backgroundColor: const Color(0xFF111934),
                         elevation: 0,
 
                         shape: RoundedRectangleBorder(
@@ -269,7 +269,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                               ),
 
                               decoration: BoxDecoration(
-                                color: const Color(0xFF06153D),
+                                color: const Color(0xFF111934),
                                 borderRadius: BorderRadius.circular(4),
                               ),
 
@@ -372,7 +372,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                                   decoration: BoxDecoration(
                                     color: temCompromisso
-                                        ? const Color(0xFF06153D)
+                                        ? const Color(0xFF111934)
                                         : Colors.transparent,
 
                                     shape: BoxShape.circle,
