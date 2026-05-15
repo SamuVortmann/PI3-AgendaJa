@@ -10,31 +10,64 @@ class HomeClientePage extends StatefulWidget {
   });
 
   @override
-  State<HomeClientePage> createState() => _HomeClientePageState();
+ State<HomeClientePage> createState() => _HomeClientePageState();
 }
 
 class _HomeClientePageState extends State<HomeClientePage> {
 
-  int mesAtual = 4;
+  int mesAtual = DateTime.now().month - 1;
 
-  List meses = [
-    'janeiro',
-    'fevereiro',
-    'março',
-    'abril',
-    'maio',
-    'junho',
-    'julho',
-    'agosto',
-    'setembro',
-    'outubro',
-    'novembro',
-    'dezembro',
+  final List<String> meses = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
 
-  bool mostrarCompromisso = false;
+  // SEM AGENDAMENTOS
 
-  List<int> diasComCompromisso = [28];
+  final List<int> diasComCompromisso = [];
+
+  bool mostrarCompromissos = false;
+
+  int diasDoMes() {
+
+    switch (mesAtual + 1) {
+
+      case 2:
+        return 28;
+
+      case 4:
+      case 6:
+      case 9:
+      case 11:
+        return 30;
+
+      default:
+        return 31;
+    }
+  }
+
+  // DESCOBRE O PRIMEIRO DIA DA SEMANA
+
+  int primeiroDiaMes() {
+
+    DateTime data = DateTime(
+      2026,
+      mesAtual + 1,
+      1,
+    );
+
+    return data.weekday % 7;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +94,10 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
               decoration: const BoxDecoration(
                 color: Color(0xFF06153D),
+
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(45),
+                ),
               ),
 
               child: Row(
@@ -108,6 +145,8 @@ class _HomeClientePageState extends State<HomeClientePage> {
                   Container(
                     height: 50,
 
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: const Color(0xFF06153D),
@@ -116,16 +155,24 @@ class _HomeClientePageState extends State<HomeClientePage> {
                       borderRadius: BorderRadius.circular(14),
                     ),
 
-                    child: const TextField(
+                    child: const Row(
+                      children: [
 
-                      decoration: InputDecoration(
-                        hintText: 'Buscar serviço, empresa...',
-                        border: InputBorder.none,
+                        Expanded(
+                          child: TextField(
 
-                        prefixIcon: Icon(Icons.search),
+                            decoration: InputDecoration(
+                              hintText: 'Buscar serviço, empresa...',
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
 
-                        contentPadding: EdgeInsets.only(top: 14),
-                      ),
+                        Icon(
+                          Icons.search,
+                          color: Color(0xFF06153D),
+                        )
+                      ],
                     ),
                   ),
 
@@ -134,7 +181,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                   // BOTÃO AGENDAR
 
                   SizedBox(
-                    width: 110,
+                    width: 120,
                     height: 40,
 
                     child: ElevatedButton(
@@ -142,6 +189,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF06153D),
+                        elevation: 0,
 
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -153,6 +201,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                         style: TextStyle(
                           color: Colors.white,
+                          fontSize: 15,
                         ),
                       ),
                     ),
@@ -190,7 +239,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                     child: Column(
                       children: [
 
-                        // MÊS
+                        // TROCA DE MÊS
 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -205,6 +254,8 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                   if (mesAtual > 0) {
                                     mesAtual--;
                                   }
+
+                                  mostrarCompromissos = false;
                                 });
                               },
 
@@ -217,7 +268,10 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 vertical: 5,
                               ),
 
-                              color: const Color(0xFF06153D),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF06153D),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
 
                               child: Text(
                                 meses[mesAtual],
@@ -236,6 +290,8 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                   if (mesAtual < 11) {
                                     mesAtual++;
                                   }
+
+                                  mostrarCompromissos = false;
                                 });
                               },
 
@@ -246,7 +302,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                         const SizedBox(height: 18),
 
-                        // DIAS SEMANA
+                        // DIAS DA SEMANA
 
                         const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -264,26 +320,37 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                         const SizedBox(height: 18),
 
-                        // DIAS
+                        // GRID DO CALENDÁRIO
 
                         GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
 
-                          itemCount: 30,
+                          itemCount:
+                          diasDoMes() + primeiroDiaMes(),
 
                           gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 7,
-                            childAspectRatio: 1.2,
+                            childAspectRatio: 1,
                           ),
 
                           itemBuilder: (context, index) {
 
-                            int dia = index + 1;
+                            // ESPAÇOS VAZIOS
+
+                            if (index < primeiroDiaMes()) {
+                              return const SizedBox();
+                            }
+
+                            int dia =
+                                index - primeiroDiaMes() + 1;
+
+                            // NUNCA COMEÇA AZUL
 
                             bool temCompromisso =
-                            diasComCompromisso.contains(dia);
+                                diasComCompromisso.contains(dia) &&
+                                diasComCompromisso.isNotEmpty;
 
                             return GestureDetector(
 
@@ -292,8 +359,8 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 if (temCompromisso) {
 
                                   setState(() {
-                                    mostrarCompromisso =
-                                    !mostrarCompromisso;
+                                    mostrarCompromissos =
+                                    !mostrarCompromissos;
                                   });
                                 }
                               },
@@ -319,6 +386,8 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                         color: temCompromisso
                                             ? Colors.white
                                             : Colors.black,
+
+                                        fontSize: 16,
                                       ),
                                     ),
                                   ),
@@ -330,57 +399,27 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                         // COMPROMISSOS
 
-                        if (mostrarCompromisso)
+                        if (mostrarCompromissos)
 
                           Container(
                             width: double.infinity,
 
-                            margin: const EdgeInsets.only(top: 12),
+                            margin: const EdgeInsets.only(top: 15),
 
                             padding: const EdgeInsets.all(16),
 
                             decoration: BoxDecoration(
                               color: const Color(0xFF06153D),
-
                               borderRadius: BorderRadius.circular(14),
                             ),
 
-                            child: const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: const Text(
+                              'Compromissos do dia',
 
-                              children: [
-
-                                Text(
-                                  'Compromissos:',
-
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                  ),
-                                ),
-
-                                SizedBox(height: 12),
-
-                                Text(
-                                  '15:30 - Clínica vida - Concórdia',
-
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 17,
-                                  ),
-                                ),
-
-                                SizedBox(height: 20),
-
-                                Text(
-                                  '18:00 - Salão bela vista - Irani',
-
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ],
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
                             ),
                           )
                       ],
@@ -389,7 +428,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                   const SizedBox(height: 30),
 
-                  // AGENDAMENTOS DO MÊS
+                  // AGENDAMENTOS
 
                   const Text(
                     'Agendamentos do mês',
@@ -403,7 +442,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
 
                   Container(
                     width: double.infinity,
-                    height: 90,
+                    height: 100,
 
                     padding: const EdgeInsets.all(16),
 
