@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'cssprimeira_pg.dart';
 import 'login_pg.dart';
+import 'cadastro.dart';
 
 class PaginaInicial extends StatelessWidget {
   const PaginaInicial({super.key});
@@ -25,12 +26,23 @@ class PaginaInicial extends StatelessWidget {
 
               const SizedBox(height: 25),
 
+              // BOTÃO CADASTRO
+
               SizedBox(
                 width: 260,
                 height: 45,
 
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CadastroPage(),
+                      ),
+                    );
+
+                  },
 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -47,6 +59,8 @@ class PaginaInicial extends StatelessWidget {
               ),
 
               const SizedBox(height: 15),
+
+              // BOTÃO LOGIN
 
               SizedBox(
                 width: 260,

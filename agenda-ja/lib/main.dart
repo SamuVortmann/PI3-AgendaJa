@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'pages/primeira_pg.dart';
+import 'pages/login_pg.dart';
+import 'pages/cadastro.dart';
+import 'pages/homecliente.dart';
 
 void main() {
   runApp(const MeuApp());
@@ -10,9 +13,15 @@ class MeuApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: PaginaInicial(),
+
+      routes: {
+        '/login': (context) => const LoginPg(),
+        '/cadastro': (context) => const CadastroPage(),
+      },
+
+      home: const PaginaInicial(),
     );
   }
 }

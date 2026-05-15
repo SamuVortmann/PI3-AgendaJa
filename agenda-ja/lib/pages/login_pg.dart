@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cadastro.dart';
 
 class LoginPg extends StatelessWidget {
   const LoginPg({super.key});
@@ -33,8 +34,6 @@ class LoginPg extends StatelessWidget {
                     width: 110,
                   ),
 
-                  const SizedBox(height: 0),
-
                   const Text(
                     'Login',
                     style: TextStyle(
@@ -54,8 +53,6 @@ class LoginPg extends StatelessWidget {
 
               child: Column(
                 children: [
-
-                  // EMAIL
 
                   Container(
                     width: double.infinity,
@@ -93,8 +90,6 @@ class LoginPg extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 20),
-
-                  // SENHA
 
                   Container(
                     width: double.infinity,
@@ -134,8 +129,6 @@ class LoginPg extends StatelessWidget {
 
                   const SizedBox(height: 35),
 
-                  // BOTÃO
-
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -172,15 +165,44 @@ class LoginPg extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 10),
 
-                  const Text(
-                    'Não tem uma conta? CADASTRE-SE',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.black54,
-                      fontSize: 16,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+
+                      const Text(
+                        'Não tem uma conta? ',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.black54,
+                          fontSize: 16,
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () {
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CadastroPage(),
+                            ),
+                          );
+
+                        },
+
+                        child: const Text(
+                          'CADASTRE-SE',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Color(0xFF001F3D),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
