@@ -9,6 +9,7 @@ class CadastroPage extends StatefulWidget {
   State<CadastroPage> createState() => _CadastroPageState();
 }
 
+
 class _CadastroPageState extends State<CadastroPage> {
   final nomeController = TextEditingController();
   final emailController = TextEditingController();
