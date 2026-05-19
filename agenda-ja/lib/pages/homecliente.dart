@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'menu.dart'; // Importante importar o arquivo do menu
 
 class HomeClientePage extends StatefulWidget {
   final String nome;
@@ -13,6 +14,9 @@ class HomeClientePage extends StatefulWidget {
 }
 
 class _HomeClientePageState extends State<HomeClientePage> {
+  // GlobalKey para controlar o Scaffold e abrir o Drawer manualmente
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   int mesAtual = DateTime.now().month - 1;
 
   final List<String> meses = [
@@ -55,7 +59,12 @@ class _HomeClientePageState extends State<HomeClientePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF111934), // Fundo azul escuro
+      key: _scaffoldKey, // Atribui a chave ao Scaffold
+      backgroundColor: const Color(0xFF111934),
+
+      // ADICIONANDO O MENU LATERAL
+      drawer: MenuCliente(nome: widget.nome),
+
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -69,28 +78,35 @@ class _HomeClientePageState extends State<HomeClientePage> {
                     // NAVBAR (Fundo Azul)
                     Container(
                       width: double.infinity,
-                      height: 100, // Altura fixa para a navbar
+                      height: 100,
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       color: const Color(0xFF111934),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Icon(Icons.menu, color: Colors.white, size: 34),
-                          // Caso a imagem não carregue no seu ambiente de teste, use um Placeholder ou verifique o caminho
-                          Image.asset('assets/logo.png',
-                              width: 80,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.image, color: Colors.white)),
+                          // ÍCONE DE MENU QUE ABRE O DRAWER
+                          IconButton(
+                            onPressed: () {
+                              _scaffoldKey.currentState?.openDrawer();
+                            },
+                            icon: const Icon(Icons.menu,
+                                color: Colors.white, size: 34),
+                          ),
+
+                          Image.asset(
+                            'assets/logo.png',
+                            width: 80,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.image, color: Colors.white),
+                          ),
                           const SizedBox(width: 34),
                         ],
                       ),
                     ),
 
                     // CONTEÚDO (Fundo Cinza)
-                    // Usamos um Container que se expande para ocupar no mínimo o resto da tela
                     Container(
                       width: double.infinity,
-                      // Aqui garantimos que ele tenha pelo menos a altura da tela menos a navbar
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight - 100,
                       ),
@@ -299,7 +315,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 40), // Espaço extra no final
+                            const SizedBox(height: 40),
                           ],
                         ),
                       ),
