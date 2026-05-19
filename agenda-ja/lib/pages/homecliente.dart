@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'menu.dart'; // Importante importar o arquivo do menu
+import 'menu.dart';
 
 class HomeClientePage extends StatefulWidget {
   final String nome;
+  final String telefone; // Adicionado telefone aqui também
 
   const HomeClientePage({
     super.key,
     required this.nome,
+    required this.telefone, // Agora é obrigatório passar o telefone para esta tela
   });
 
   @override
@@ -14,7 +16,6 @@ class HomeClientePage extends StatefulWidget {
 }
 
 class _HomeClientePageState extends State<HomeClientePage> {
-  // GlobalKey para controlar o Scaffold e abrir o Drawer manualmente
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int mesAtual = DateTime.now().month - 1;
@@ -59,11 +60,14 @@ class _HomeClientePageState extends State<HomeClientePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Atribui a chave ao Scaffold
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF111934),
 
-      // ADICIONANDO O MENU LATERAL
-      drawer: MenuCliente(nome: widget.nome),
+      // AGORA PASSAMOS O NOME E O TELEFONE PARA O MENU
+      drawer: MenuCliente(
+        nome: widget.nome,
+        telefone: widget.telefone,
+      ),
 
       body: SafeArea(
         child: LayoutBuilder(
@@ -75,7 +79,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                 ),
                 child: Column(
                   children: [
-                    // NAVBAR (Fundo Azul)
+                    // NAVBAR
                     Container(
                       width: double.infinity,
                       height: 100,
@@ -84,7 +88,6 @@ class _HomeClientePageState extends State<HomeClientePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // ÍCONE DE MENU QUE ABRE O DRAWER
                           IconButton(
                             onPressed: () {
                               _scaffoldKey.currentState?.openDrawer();
@@ -92,7 +95,6 @@ class _HomeClientePageState extends State<HomeClientePage> {
                             icon: const Icon(Icons.menu,
                                 color: Colors.white, size: 34),
                           ),
-
                           Image.asset(
                             'assets/logo.png',
                             width: 80,
@@ -104,7 +106,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                       ),
                     ),
 
-                    // CONTEÚDO (Fundo Cinza)
+                    // CONTEÚDO
                     Container(
                       width: double.infinity,
                       constraints: BoxConstraints(

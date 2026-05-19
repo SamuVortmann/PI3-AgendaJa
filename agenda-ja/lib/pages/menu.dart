@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+import 'perfil_cliente.dart';
 
 class MenuCliente extends StatelessWidget {
   final String nome;
+  final String telefone; // Agora é obrigatório e sem valor padrão fixo
 
   const MenuCliente({
     super.key,
     required this.nome,
+    required this.telefone, // Exige que o telefone seja passado
   });
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      // Remove a borda padrão do Drawer
       width: MediaQuery.of(context).size.width * 0.8,
       backgroundColor: const Color(0xFF111934),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cabeçalho com Ícone de Menu e Logo (como na imagem)
+            // Cabeçalho
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
@@ -34,7 +36,7 @@ class MenuCliente extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) =>
                         const Icon(Icons.circle, color: Colors.white, size: 30),
                   ),
-                  const SizedBox(width: 48), // Espaçador para equilibrar o Row
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -63,12 +65,26 @@ class MenuCliente extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const Text(
-                        'Editar perfil',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          decoration: TextDecoration.underline,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PerfilPage(
+                                nome: nome,
+                                telefone: telefone,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Editar perfil',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            decoration: TextDecoration.underline,
+                          ),
                         ),
                       ),
                     ],
@@ -86,7 +102,16 @@ class MenuCliente extends StatelessWidget {
               context: context,
               titulo: 'Meus agendamentos',
               onTap: () {
-                // Navegar para agendamentos
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PerfilPage(
+                      nome: nome,
+                      telefone: telefone,
+                    ),
+                  ),
+                );
               },
             ),
 
@@ -94,18 +119,17 @@ class MenuCliente extends StatelessWidget {
               context: context,
               titulo: 'Notificações',
               onTap: () {
-                // Navegar para notificações
+                Navigator.pop(context);
               },
             ),
 
             const Spacer(),
 
-            // Botão Sair da Conta no rodapé
+            // Botão Sair
             Padding(
               padding: const EdgeInsets.all(24),
               child: InkWell(
                 onTap: () {
-                  // Lógica de logout
                   Navigator.pushNamedAndRemoveUntil(
                       context, '/', (route) => false);
                 },
