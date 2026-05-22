@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CadastroEmpresaPage extends StatefulWidget {
   const CadastroEmpresaPage({super.key});
@@ -11,24 +12,36 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
   String? tipoServico;
 
   Map<String, bool> diasSelecionados = {
-    'Segunda': true,
+    'Segunda': false,
     'Terça': false,
-    'Quarta': true,
+    'Quarta': false,
     'Quinta': false,
     'Sexta': false,
     'Sábado': false,
     'Domingo': false,
   };
 
-  Map<String, Map<String, String>> horarios = {
-    'Segunda': {'inicio': '12:00', 'fim': '13:00'},
-    'Terça': {'inicio': '08:30', 'fim': '18:00'},
-    'Quarta': {'inicio': '08:30', 'fim': '18:00'},
-    'Quinta': {'inicio': '08:30', 'fim': '18:00'},
-    'Sexta': {'inicio': '08:30', 'fim': '18:00'},
-    'Sábado': {'inicio': '', 'fim': ''},
-    'Domingo': {'inicio': '', 'fim': ''},
-  };
+  Map<String, Map<String, TextEditingController>> horariosControllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    diasSelecionados.keys.forEach((dia) {
+      horariosControllers[dia] = {
+        'inicio': TextEditingController(text: ''),
+        'fim': TextEditingController(text: ''),
+      };
+    });
+  }
+
+  @override
+  void dispose() {
+    horariosControllers.values.forEach((controllers) {
+      controllers['inicio']?.dispose();
+      controllers['fim']?.dispose();
+    });
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +50,34 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // TOPO
+            // TOPO (Padronizado com CadastroPage)
             Container(
               width: double.infinity,
-              height: 90,
-              alignment: Alignment.center,
+              height: 120, // Aumentado para 120 para igualar ao CadastroPage
               color: const Color(0xFF111934),
-              child: const Text(
-                'Empresa',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 20,
+                    left: 10,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                  const Center(
+                    child: Text(
+                      'Empresa',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30, // Aumentado para 30 para igualar ao CadastroPage
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -61,7 +89,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                 decoration: const BoxDecoration(
                   color: Color(0xFFF3F3F3),
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
+                    topLeft: Radius.circular(60), // Aumentado para 60 para igualar ao CadastroPage
                   ),
                 ),
                 child: SingleChildScrollView(
@@ -81,7 +109,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                             const Text(
                               'Tipo de serviço',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 18, // Aumentado para 16 para padronizar
                                 color: Colors.black87,
                               ),
                             ),
@@ -89,32 +117,34 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                             const SizedBox(height: 8),
 
                             Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF4F4F4),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE0E0E0)),
                               ),
-                              child: DropdownButton<String>(
-                                value: tipoServico,
-                                isExpanded: true,
-                                underline: const SizedBox(),
-                                hint: const Text(
-                                  'seu tipo de serviço',
-                                  style: TextStyle(fontSize: 12),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: tipoServico,
+                                  isExpanded: true,
+                                  hint: const Text(
+                                    'seu tipo de serviço',
+                                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  ),
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                                  items: ['Beleza', 'Saúde', 'Educação', 'Outros']
+                                      .map((value) {
+                                    return DropdownMenuItem(
+                                      value: value,
+                                      child: Text(value, style: const TextStyle(color: Colors.black87)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      tipoServico = value;
+                                    });
+                                  },
                                 ),
-                                items: ['Beleza', 'Saúde', 'Educação', 'Outros']
-                                    .map((value) {
-                                  return DropdownMenuItem(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    tipoServico = value;
-                                  });
-                                },
                               ),
                             ),
 
@@ -124,15 +154,14 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                             const Text(
                               'Endereço:',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 18, // Aumentado para 16
                               ),
                             ),
 
                             const SizedBox(height: 8),
 
                             Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF4F4F4),
                                 borderRadius: BorderRadius.circular(12),
@@ -140,6 +169,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                               child: const TextField(
                                 decoration: InputDecoration(
                                   hintText: 'endereço do seu comércio',
+                                  hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                                   border: InputBorder.none,
                                 ),
                               ),
@@ -153,11 +183,11 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                               children: const [
                                 Text(
                                   'Dia de funcionamento',
-                                  style: TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 16),
                                 ),
                                 Text(
                                   'Horários',
-                                  style: TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),
@@ -190,18 +220,17 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                                       child: Text(
                                         dia,
                                         style: const TextStyle(
-                                          fontSize: 13,
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ),
                                     if (diasSelecionados[dia]!)
                                       Expanded(
                                         child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
+                                          mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-                                            horarioBox(
-                                              horarios[dia]!['inicio']!,
+                                            horarioInput(
+                                              horariosControllers[dia]!['inicio']!,
                                             ),
                                             const Padding(
                                               padding: EdgeInsets.symmetric(
@@ -209,8 +238,8 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                                               ),
                                               child: Text('-'),
                                             ),
-                                            horarioBox(
-                                              horarios[dia]!['fim']!,
+                                            horarioInput(
+                                              horariosControllers[dia]!['fim']!,
                                             ),
                                           ],
                                         ),
@@ -223,23 +252,26 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 45), // Aumentado para igualar ao CadastroPage
 
-                      // BOTÃO
+                      // BOTÃO CONTINUAR (Padronizado com CadastroPage)
                       Align(
                         alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
+                        child: GestureDetector(
+                          onTap: () {
+                            // Ação de continuar
+                          },
                           child: const Text(
                             'CONTINUAR ➜',
                             style: TextStyle(
                               color: Color(0xFF111934),
+                              fontSize: 20, // Aumentado para 18
                               fontWeight: FontWeight.bold,
-                              fontSize: 15,
                             ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -251,19 +283,50 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
     );
   }
 
-  Widget horarioBox(String texto) {
+  Widget horarioInput(TextEditingController controller) {
     return Container(
-      width: 58,
-      height: 28,
+      width: 65,
+      height: 32,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: const Color(0xFFF4F4F4),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        texto,
-        style: const TextStyle(fontSize: 11),
+      child: TextField(
+        controller: controller,
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        style: const TextStyle(fontSize: 14),
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          HorarioInputFormatter(),
+          LengthLimitingTextInputFormatter(5),
+        ],
+        decoration: const InputDecoration(
+          hintText: '00:00',
+          hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
       ),
+    );
+  }
+}
+
+class HorarioInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String text = newValue.text;
+    if (text.length > 2 && !text.contains(':')) {
+      text = text.substring(0, 2) + ':' + text.substring(2);
+    }
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }

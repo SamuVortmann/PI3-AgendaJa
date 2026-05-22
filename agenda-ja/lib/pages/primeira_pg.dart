@@ -10,91 +10,85 @@ class PaginaInicial extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: CssPaginaInicial.background,
+      body: Center(
+        child: Column(
+          children: [
+            // Spacer no topo com flex maior para empurrar o conteúdo para baixo do meio
+            const Spacer(flex: 2),
 
-      body: Padding(
-        padding: const EdgeInsets.only(top: 140),
+            Image.asset(
+              'assets/logo.png',
+              width: 250,
+            ),
 
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
+            const SizedBox(height: 5),
 
-              Image.asset(
-                'assets/logo.png',
-                width: 220,
-              ),
-
-              const SizedBox(height: 25),
-
-              // BOTÃO CADASTRO
-
-              SizedBox(
-                width: 260,
-                height: 45,
-
-                child: ElevatedButton(
-                  onPressed: () {
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CadastroPage(),
-                      ),
-                    );
-
-                  },
-
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                  ),
-
-                  child: const Text(
-                    'Cadastro',
-                    style: TextStyle(
-                      fontSize: 18,
+            // BOTÃO CADASTRO
+            SizedBox(
+              width: 260,
+              height: 45,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CadastroPage(),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Cadastro',
+                  style: TextStyle(
+                    fontSize: 18,
                   ),
                 ),
               ),
+            ),
 
-              const SizedBox(height: 15),
+            const SizedBox(height: 15),
 
-              // BOTÃO LOGIN
-
-              SizedBox(
-                width: 260,
-                height: 45,
-
-                child: ElevatedButton(
-                  onPressed: () {
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPg(),
-                      ),
-                    );
-
-                  },
-
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                  ),
-
-                  child: const Text(
-                    'Entrar',
-                    style: TextStyle(
-                      fontSize: 18,
+            // BOTÃO LOGIN
+            SizedBox(
+              width: 260,
+              height: 45,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginPg(),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Entrar',
+                  style: TextStyle(
+                    fontSize: 18,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            
+            // Spacer no fundo com flex menor para garantir que não fique colado embaixo
+            const Spacer(flex: 2),
+          ],
         ),
       ),
     );
   }
 }
+

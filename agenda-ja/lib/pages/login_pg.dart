@@ -40,19 +40,12 @@ class LoginPg extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 40),
+                                const SizedBox(height: 60),
                                 Image.asset(
                                   'assets/logo.png',
-                                  width: 110,
+                                  width: 130,
                                 ),
-                                const Text(
-                                  'Agenda já',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                
                               ],
                             ),
                           ),
