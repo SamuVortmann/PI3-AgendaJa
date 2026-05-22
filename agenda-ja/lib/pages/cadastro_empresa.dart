@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dados_globais.dart';
-import 'homecliente.dart'; // Importa sua Home atualizada
 
 class CadastroEmpresaPage extends StatefulWidget {
   const CadastroEmpresaPage({super.key});
@@ -13,16 +12,11 @@ class CadastroEmpresaPage extends StatefulWidget {
 class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
   String? tipoServico;
   final TextEditingController enderecoController = TextEditingController();
-  final TextEditingController nomeEmpresaController = TextEditingController(); // Adicionei este controller
+  final TextEditingController nomeEmpresaController = TextEditingController();
 
   Map<String, bool> diasSelecionados = {
-    'Segunda': false,
-    'Terça': false,
-    'Quarta': false,
-    'Quinta': false,
-    'Sexta': false,
-    'Sábado': false,
-    'Domingo': false,
+    'Segunda': false, 'Terça': false, 'Quarta': false,
+    'Quinta': false, 'Sexta': false, 'Sábado': false, 'Domingo': false,
   };
 
   Map<String, Map<String, TextEditingController>> horariosControllers = {};
@@ -30,23 +24,12 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
   @override
   void initState() {
     super.initState();
-    diasSelecionados.keys.forEach((dia) {
+    for (var dia in diasSelecionados.keys) {
       horariosControllers[dia] = {
         'inicio': TextEditingController(text: ''),
         'fim': TextEditingController(text: ''),
       };
-    });
-  }
-
-  @override
-  void dispose() {
-    horariosControllers.values.forEach((controllers) {
-      controllers['inicio']?.dispose();
-      controllers['fim']?.dispose();
-    });
-    enderecoController.dispose();
-    nomeEmpresaController.dispose();
-    super.dispose();
+    }
   }
 
   void validarECadastrar() {
@@ -55,10 +38,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
 
     if (nome.isEmpty || endereco.isEmpty || tipoServico == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha o nome, endereço e tipo de serviço!'),
-          backgroundColor: Colors.redAccent,
-        ),
+        const SnackBar(content: Text('Por favor, preencha o nome, endereço e tipo de serviço!'), backgroundColor: Colors.redAccent),
       );
       return;
     }
@@ -70,19 +50,21 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
       categoria: tipoServico!,
     );
 
-    // Navega para a Home
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HomeClientePage(nome: 'Empresa', telefone: ''),
-      ),
-      (route) => false,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Empresa cadastrada com sucesso!'),
-        backgroundColor: Colors.green,
+    // EXIBE MENSAGEM DE SUCESSO E AVISO DE CONSTRUÇÃO
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sucesso!'),
+        content: const Text('Empresa cadastrada com sucesso na prancheta temporária.\n\nA Home da Empresa ainda está em desenvolvimento (Página 404).'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Fecha o alerta
+              Navigator.pop(context); // Volta para a tela anterior (Cadastro Inicial)
+            },
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
@@ -94,7 +76,6 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // TOPO
             Container(
               width: double.infinity,
               height: 120,
@@ -110,16 +91,11 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                     ),
                   ),
                   const Center(
-                    child: Text(
-                      'Empresa',
-                      style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w400),
-                    ),
+                    child: Text('Empresa', style: TextStyle(color: Colors.white, fontSize: 30)),
                   ),
                 ],
               ),
             ),
-
-            // CONTEÚDO
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -137,7 +113,6 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // NOME DA EMPRESA (Campo adicionado para integração)
                             const Text('Nome da empresa:', style: TextStyle(fontSize: 18, color: Colors.black87)),
                             const SizedBox(height: 8),
                             Container(
@@ -149,9 +124,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                               ),
                             ),
                             const SizedBox(height: 18),
-
-                            // TIPO SERVIÇO
-                            const Text('Tipo de serviço', style: TextStyle(fontSize: 18, color: Colors.black87)),
+                            const Text('Tipo de serviço', style: TextStyle(fontSize: 18)),
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -160,17 +133,13 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                                 child: DropdownButton<String>(
                                   value: tipoServico,
                                   isExpanded: true,
-                                  hint: const Text('seu tipo de serviço', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                                  items: ['Beleza', 'Saúde', 'Educação', 'Outros'].map((value) {
-                                    return DropdownMenuItem(value: value, child: Text(value));
-                                  }).toList(),
+                                  hint: const Text('seu tipo de serviço'),
+                                  items: ['Beleza', 'Saúde', 'Educação', 'Outros'].map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
                                   onChanged: (value) => setState(() => tipoServico = value),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 18),
-
-                            // ENDEREÇO
                             const Text('Endereço:', style: TextStyle(fontSize: 18)),
                             const SizedBox(height: 8),
                             Container(
@@ -182,8 +151,6 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                               ),
                             ),
                             const SizedBox(height: 22),
-
-                            // HORÁRIOS
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: const [
@@ -226,10 +193,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
                           onTap: validarECadastrar,
-                          child: const Text(
-                            'CONTINUAR ➜',
-                            style: TextStyle(color: Color(0xFF111934), fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
+                          child: const Text('CONTINUAR ➜', style: TextStyle(color: Color(0xFF111934), fontSize: 20, fontWeight: FontWeight.bold)),
                         ),
                       ),
                       const SizedBox(height: 40),
@@ -246,12 +210,10 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
 
   Widget horarioInput(TextEditingController controller) {
     return Container(
-      width: 65,
-      height: 32,
+      width: 65, height: 32,
       decoration: BoxDecoration(color: const Color(0xFFF4F4F4), borderRadius: BorderRadius.circular(8)),
       child: TextField(
-        controller: controller,
-        textAlign: TextAlign.center,
+        controller: controller, textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly, HorarioInputFormatter(), LengthLimitingTextInputFormatter(5)],
         decoration: const InputDecoration(hintText: '00:00', border: InputBorder.none, isDense: true),
