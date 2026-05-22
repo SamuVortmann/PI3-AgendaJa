@@ -17,25 +17,43 @@ class LoginPg extends StatelessWidget {
               child: IntrinsicHeight(
                 child: Column(
                   children: [
-                    // Parte Superior: Logo e Título (Fundo Azul)
+                    // Parte Superior: Logo e Título (Fundo Azul) + Botão de Voltar
                     Container(
                       width: double.infinity,
                       height: 220,
                       color: const Color(0xFF111934),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          const SizedBox(height: 40),
-                          Image.asset(
-                            'assets/logo.png',
-                            width: 110,
+                          // Botão de Voltar
+                          Positioned(
+                            top: 40,
+                            left: 10,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
                           ),
-                          const Text(
-                            'Agenda já',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                          // Logo e Título centralizados
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 40),
+                                Image.asset(
+                                  'assets/logo.png',
+                                  width: 110,
+                                ),
+                                const Text(
+                                  'Agenda já',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

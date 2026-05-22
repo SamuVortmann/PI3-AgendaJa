@@ -101,19 +101,36 @@ class _CadastroPageState extends State<CadastroPage> {
                 ),
                 child: Column(
                   children: [
+                    // Cabeçalho com botão de voltar
                     Container(
                       width: double.infinity,
                       height: 120,
                       color: const Color(0xFF111934),
-                      child: const Center(
-                        child: Text(
-                          'Cadastro',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w400,
+                      child: Stack(
+                        children: [
+                          // Botão de Voltar
+                          Positioned(
+                            top: 20,
+                            left: 10,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
                           ),
-                        ),
+                          // Título centralizado
+                          const Center(
+                            child: Text(
+                              'Cadastro',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Container(
