@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dados_globais.dart'; // Importa a prancheta global
 
 class AgendarPage extends StatefulWidget {
   const AgendarPage({super.key});
@@ -11,7 +12,6 @@ class _AgendarPageState extends State<AgendarPage> {
   final TextEditingController _searchController = TextEditingController();
   String filtroSelecionado = 'Todos';
   
-  final List<Map<String, String>> todasEmpresas = []; 
   List<Map<String, String>> empresasFiltradas = [];
   bool mostrarResultados = false;
 
@@ -22,7 +22,8 @@ class _AgendarPageState extends State<AgendarPage> {
         empresasFiltradas = [];
       } else {
         mostrarResultados = true;
-        empresasFiltradas = todasEmpresas.where((empresa) {
+        // AGORA ELE LÊ DA LISTA GLOBAL (DadosGlobais.empresasCadastradas)
+        empresasFiltradas = DadosGlobais.empresasCadastradas.where((empresa) {
           final matchesQuery = empresa['nome']!.toLowerCase().contains(query.toLowerCase());
           final matchesFiltro = filtroSelecionado == 'Todos' || empresa['categoria'] == filtroSelecionado;
           return matchesQuery && matchesFiltro;
@@ -38,7 +39,7 @@ class _AgendarPageState extends State<AgendarPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // NAVBAR com Botão de Voltar e LOGO
+            // NAVBAR com LOGO e Voltar
             Container(
               width: double.infinity,
               height: 80,
@@ -53,14 +54,14 @@ class _AgendarPageState extends State<AgendarPage> {
                   Expanded(
                     child: Center(
                       child: Image.asset(
-                        'assets/logo.png', // Substituído o texto pela logo
-                        width: 110,
+                        'assets/logo.png',
+                        width: 100,
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(Icons.image, color: Colors.white),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // Mantém a logo centralizada
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -71,15 +72,14 @@ class _AgendarPageState extends State<AgendarPage> {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Color(0xFFF1F1F1),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(45),
-                  ),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
                       const SizedBox(height: 10),
+                      // BARRA DE PESQUISA E FILTRO
                       Row(
                         children: [
                           PopupMenuButton<String>(
@@ -131,15 +131,11 @@ class _AgendarPageState extends State<AgendarPage> {
 
                       const SizedBox(height: 30),
 
+                      // LISTA DE RESULTADOS
                       Expanded(
                         child: mostrarResultados
                             ? (empresasFiltradas.isEmpty 
-                                ? const Center(
-                                    child: Text(
-                                      'Nenhuma empresa cadastrada nesta categoria',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  )
+                                ? const Center(child: Text('Nenhuma empresa encontrada', style: TextStyle(color: Colors.grey)))
                                 : ListView.builder(
                                     itemCount: empresasFiltradas.length,
                                     itemBuilder: (context, index) {
