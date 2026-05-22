@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'menu.dart';
+import 'agendar.dart'; // Importação do arquivo de agendamento
 
 class HomeClientePage extends StatefulWidget {
   final String nome;
@@ -144,7 +145,6 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                // BOTÃO DE FILTRO
                                 Container(
                                   height: 50,
                                   width: 50,
@@ -164,19 +164,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                       return categoriasFiltro.map((String categoria) {
                                         return PopupMenuItem<String>(
                                           value: categoria,
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                filtroSelecionado == categoria 
-                                                    ? Icons.check_circle 
-                                                    : Icons.circle_outlined,
-                                                size: 18,
-                                                color: const Color(0xFF111934),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Text(categoria),
-                                            ],
-                                          ),
+                                          child: Text(categoria),
                                         );
                                       }).toList();
                                     },
@@ -185,30 +173,21 @@ class _HomeClientePageState extends State<HomeClientePage> {
                               ],
                             ),
                             
-                            // INDICADOR DE FILTRO ATIVO
-                            if (filtroSelecionado != 'Todos')
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Chip(
-                                  label: Text(filtroSelecionado, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                                  backgroundColor: const Color(0xFF111934),
-                                  deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
-                                  onDeleted: () {
-                                    setState(() {
-                                      filtroSelecionado = 'Todos';
-                                    });
-                                  },
-                                ),
-                              ),
-
                             const SizedBox(height: 18),
 
-                            // BOTÃO AGENDAR
+                            // BOTÃO AGENDAR (Configurado para abrir a AgendarPage)
                             SizedBox(
                               width: 120,
                               height: 40,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const AgendarPage(),
+                                    ),
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF111934),
                                   elevation: 0,
@@ -245,7 +224,6 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                         onPressed: () {
                                           setState(() {
                                             if (mesAtual > 0) mesAtual--;
-                                            mostrarCompromissos = false;
                                           });
                                         },
                                         icon: const Icon(Icons.arrow_back_ios, size: 18),
@@ -265,7 +243,6 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                         onPressed: () {
                                           setState(() {
                                             if (mesAtual < 11) mesAtual++;
-                                            mostrarCompromissos = false;
                                           });
                                         },
                                         icon: const Icon(Icons.arrow_forward_ios, size: 18),
@@ -292,25 +269,8 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                     itemBuilder: (context, index) {
                                       if (index < primeiroDiaMes()) return const SizedBox();
                                       int dia = index - primeiroDiaMes() + 1;
-                                      bool temCompromisso = diasComCompromisso.contains(dia) && diasComCompromisso.isNotEmpty;
                                       return Center(
-                                        child: Container(
-                                          width: 34,
-                                          height: 34,
-                                          decoration: BoxDecoration(
-                                            color: temCompromisso ? const Color(0xFF111934) : Colors.transparent,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '$dia',
-                                              style: TextStyle(
-                                                color: temCompromisso ? Colors.white : Colors.black,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        child: Text('$dia', style: const TextStyle(fontSize: 16)),
                                       );
                                     },
                                   ),
