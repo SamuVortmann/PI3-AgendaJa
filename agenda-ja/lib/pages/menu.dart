@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'perfil_cliente.dart';
+import 'meus-agendamentos.dart'; // Importa a tela de agendamentos
 
 class MenuCliente extends StatelessWidget {
   final String nome;
-  final String telefone; // Agora é obrigatório e sem valor padrão fixo
+  final String telefone;
 
   const MenuCliente({
     super.key,
     required this.nome,
-    required this.telefone, // Exige que o telefone seja passado
+    required this.telefone,
   });
 
   @override
@@ -102,14 +103,11 @@ class MenuCliente extends StatelessWidget {
               context: context,
               titulo: 'Meus agendamentos',
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Fecha o menu lateral
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => PerfilPage(
-                      nome: nome,
-                      telefone: telefone,
-                    ),
+                    builder: (context) => const MeusAgendamentosPage(), // Navega para a tela correta
                   ),
                 );
               },
