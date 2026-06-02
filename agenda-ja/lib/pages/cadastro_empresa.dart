@@ -1,82 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'home_empresa.dart'; // Importando a nova página criada
+import 'dados_globais.dart';
 
-class CadastroEmpresaPage extends StatefulWidget {
-  const CadastroEmpresaPage({super.key});
+class AgendaPage extends StatefulWidget {
+  final String nomeEmpresa;
+
+  const AgendaPage({super.key, required this.nomeEmpresa});
 
   @override
-  State<CadastroEmpresaPage> createState() => _CadastroEmpresaPageState();
+  State<AgendaPage> createState() => _AgendaPageState();
 }
 
-class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
-  String? tipoServico;
-  final TextEditingController enderecoController = TextEditingController();
-  final TextEditingController nomeEmpresaController = TextEditingController();
+class _AgendaPageState extends State<AgendaPage> {
+  DateTime dataSelecionada = DateTime(2026, 5, 28);
+  DateTime mesAtual = DateTime(2026, 5);
 
-  final List<String> opcoesServico = [
-    'Barbearia',
-    'Beleza / Estética',
-    'Consultório',
-    'Educação',
-    'Gastronomia / Restaurante',
-    'Oficina Mecânica',
-    'Pet Shop',
-    'Saúde / Clínica',
-    'Varejo / Loja',
-    'Outros'
-  ];
-
-  Map<String, bool> diasSelecionados = {
-    'Segunda': false,
-    'Terça': false,
-    'Quarta': false,
-    'Quinta': false,
-    'Sexta': false,
-    'Sábado': false,
-    'Domingo': false,
-  };
-
-  Map<String, Map<String, TextEditingController>> horariosControllers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    for (var dia in diasSelecionados.keys) {
-      horariosControllers[dia] = {
-        'manha_inicio': TextEditingController(text: ''),
-        'manha_fim': TextEditingController(text: ''),
-        'tarde_inicio': TextEditingController(text: ''),
-        'tarde_fim': TextEditingController(text: ''),
-      };
+  void proximoMes() {
+    if (mesAtual.year < 2027 || mesAtual.month < 12) {
+      setState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month + 1));
     }
   }
 
-  void validarECadastrar() {
-    String nome = nomeEmpresaController.text.trim();
-    String endereco = enderecoController.text.trim();
-
-    if (nome.isEmpty || endereco.isEmpty || tipoServico == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Por favor, preencha o nome, endereço e tipo de serviço!'),
-            backgroundColor: Colors.redAccent),
-      );
-      return;
+  void mesAnterior() {
+    if (mesAtual.year > 2026 || mesAtual.month > 5) {
+      setState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month - 1));
     }
+  }
 
-    // Navega para a Home da Empresa passando o nome dinâmico
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomeEmpresaPage(nomeEmpresa: nome),
-      ),
-    );
+  String getNomeMes(int mes) {
+    const meses = [
+      'janeiro',
+      'fevereiro',
+      'março',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro',
+    ];
+    return meses[mes - 1];
   }
 
   @override
   Widget build(BuildContext context) {
+    String keyData =
+        "${dataSelecionada.year}-${dataSelecionada.month.toString().padLeft(2, '0')}-${dataSelecionada.day.toString().padLeft(2, '0')}";
+    List<Map<String, String>> agendamentosDoDia =
+        DadosGlobais.getAgendamentosPorData(keyData);
+
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
       body: SafeArea(
@@ -84,22 +58,41 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
           children: [
             Container(
               width: double.infinity,
-              height: 120,
+              height: 80,
               color: const Color(0xFF111934),
               child: Stack(
                 children: [
                   Positioned(
-                    top: 20,
+                    top: 15,
                     left: 10,
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back,
-                          color: Colors.white, size: 30),
+                      icon: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                        size: 30,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  const Center(
-                    child: Text('Empresa',
-                        style: TextStyle(color: Colors.white, fontSize: 30)),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text(
+                          'A',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        Text(
+                          'Agenda Já',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -114,171 +107,150 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                 ),
                 child: SingleChildScrollView(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        'Olá, ${widget.nomeEmpresa} !',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 25),
                       Container(
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18)),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Nome da empresa:',
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.black87)),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                  color: const Color(0xFFF4F4F4),
-                                  borderRadius: BorderRadius.circular(12)),
-                              child: TextField(
-                                controller: nomeEmpresaController,
-                                decoration: const InputDecoration(
-                                    hintText: 'nome do seu comércio',
-                                    border: InputBorder.none),
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            const Text('Tipo de serviço',
-                                style: TextStyle(fontSize: 18)),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                  color: const Color(0xFFF4F4F4),
-                                  borderRadius: BorderRadius.circular(12)),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: tipoServico,
-                                  isExpanded: true,
-                                  hint: const Text('seu tipo de serviço'),
-                                  items: opcoesServico
-                                      .map((value) => DropdownMenuItem(
-                                          value: value, child: Text(value)))
-                                      .toList(),
-                                  onChanged: (value) =>
-                                      setState(() => tipoServico = value),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            const Text('Endereço:',
-                                style: TextStyle(fontSize: 18)),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                  color: const Color(0xFFF4F4F4),
-                                  borderRadius: BorderRadius.circular(12)),
-                              child: TextField(
-                                controller: enderecoController,
-                                decoration: const InputDecoration(
-                                    hintText: 'rua, bairro, cidade',
-                                    border: InputBorder.none),
-                              ),
-                            ),
-                            const SizedBox(height: 22),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text('Dia de funcionamento',
-                                    style: TextStyle(fontSize: 16)),
-                                Text('Horários (Manhã / Tarde)',
-                                    style: TextStyle(fontSize: 16)),
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Sua agenda  ',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back, size: 16),
+                                  onPressed: mesAnterior,
+                                  color: Colors.white,
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: const Color(0xFF111934),
+                                    shape: const RoundedRectangleBorder(),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15,
+                                    vertical: 4,
+                                  ),
+                                  color: const Color(0xFF111934),
+                                  child: Text(
+                                    getNomeMes(mesAtual.month),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.arrow_forward,
+                                    size: 16,
+                                  ),
+                                  onPressed: proximoMes,
+                                  color: Colors.white,
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: const Color(0xFF111934),
+                                    shape: const RoundedRectangleBorder(),
+                                  ),
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 10),
-                            ...diasSelecionados.keys.map((dia) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Checkbox(
-                                          value: diasSelecionados[dia],
-                                          onChanged: (value) => setState(() =>
-                                              diasSelecionados[dia] = value!),
-                                          activeColor: const Color(0xFF111934),
-                                        ),
-                                        SizedBox(width: 80, child: Text(dia)),
-                                        if (diasSelecionados[dia]!)
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    const Text('M: ',
-                                                        style: TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)),
-                                                    horarioInput(
-                                                        horariosControllers[
-                                                                dia]![
-                                                            'manha_inicio']!),
-                                                    const Text(' - '),
-                                                    horarioInput(
-                                                        horariosControllers[
-                                                                dia]![
-                                                            'manha_fim']!),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    const Text('T: ',
-                                                        style: TextStyle(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)),
-                                                    horarioInput(
-                                                        horariosControllers[
-                                                                dia]![
-                                                            'tarde_inicio']!),
-                                                    const Text(' - '),
-                                                    horarioInput(
-                                                        horariosControllers[
-                                                                dia]![
-                                                            'tarde_fim']!),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    const Divider(height: 1),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                            const SizedBox(height: 15),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: const [
+                                Text('D'),
+                                Text('S'),
+                                Text('T'),
+                                Text('Q'),
+                                Text('Q'),
+                                Text('S'),
+                                Text('S'),
+                              ],
+                            ),
+                            const Divider(),
+                            buildDiasCalendario(),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 45),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: validarECadastrar,
-                          child: const Text('CONTINUAR ➜',
+                      const SizedBox(height: 20),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF111934),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Agendamentos do dia',
                               style: TextStyle(
-                                  color: Color(0xFF111934),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold)),
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            if (agendamentosDoDia.isEmpty)
+                              const Center(
+                                child: Text(
+                                  'Nenhum agendamento',
+                                  style: TextStyle(color: Colors.white54),
+                                ),
+                              )
+                            else
+                              ...agendamentosDoDia
+                                  .map(
+                                    (ag) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            '${ag['horario']} - ${ag['nome']}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () => mostrarDetalhes(ag),
+                                            child: const Text(
+                                              'Detalhes',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontStyle: FontStyle.italic,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -290,46 +262,159 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
     );
   }
 
-  Widget horarioInput(TextEditingController controller) {
-    return Container(
-      width: 60,
-      height: 28,
-      decoration: BoxDecoration(
-          color: const Color(0xFFF4F4F4),
-          borderRadius: BorderRadius.circular(6)),
-      child: TextField(
-        controller: controller,
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.number,
-        style: const TextStyle(fontSize: 13),
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          HorarioInputFormatter(),
-          LengthLimitingTextInputFormatter(5)
-        ],
-        decoration: const InputDecoration(
-            hintText: '00:00',
-            border: InputBorder.none,
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 6)),
+  Widget buildDiasCalendario() {
+    int diasNoMes = DateTime(mesAtual.year, mesAtual.month + 1, 0).day;
+    int primeiroDiaSemana =
+        DateTime(mesAtual.year, mesAtual.month, 1).weekday % 7;
+    List<Widget> dias = [];
+    for (int i = 0; i < primeiroDiaSemana; i++)
+      dias.add(const SizedBox(width: 35, height: 35));
+    for (int i = 1; i <= diasNoMes; i++) {
+      String diaKey =
+          "${mesAtual.year}-${mesAtual.month.toString().padLeft(2, '0')}-${i.toString().padLeft(2, '0')}";
+      bool temAgendamento = DadosGlobais.agendamentos.containsKey(diaKey);
+      bool selecionado =
+          dataSelecionada.day == i &&
+          dataSelecionada.month == mesAtual.month &&
+          dataSelecionada.year == mesAtual.year;
+      dias.add(
+        GestureDetector(
+          onTap: () => setState(
+            () => dataSelecionada = DateTime(mesAtual.year, mesAtual.month, i),
+          ),
+          child: Container(
+            width: 35,
+            height: 35,
+            alignment: Alignment.center,
+            decoration: selecionado
+                ? const BoxDecoration(
+                    color: Color(0xFF111934),
+                    shape: BoxShape.circle,
+                  )
+                : (temAgendamento
+                      ? BoxDecoration(
+                          border: Border.all(color: const Color(0xFF111934)),
+                          shape: BoxShape.circle,
+                        )
+                      : null),
+            child: Text(
+              i.toString().padLeft(2, '0'),
+              style: TextStyle(
+                color: selecionado ? Colors.white : Colors.black,
+                fontWeight: (selecionado || temAgendamento)
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Wrap(spacing: 5, runSpacing: 5, children: dias);
+  }
+
+  void mostrarDetalhes(Map<String, String> ag) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: 500,
+        padding: const EdgeInsets.all(30),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF3F3F3),
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Detalhes agendamento',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(25),
+              decoration: BoxDecoration(
+                color: const Color(0xFF111934),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      ag['nome']!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Data: ${dataSelecionada.day}/${dataSelecionada.month}/${dataSelecionada.year}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Horário: ${ag['horario']}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Telefone: ${ag['telefone']}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      'Pendente',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  botaoModal(
+                    'Confirmar',
+                    Colors.green,
+                    () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 10),
+                  botaoModal(
+                    'Cancelar',
+                    Colors.red,
+                    () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 10),
+                  botaoModal(
+                    'Atendimento concluído',
+                    Colors.grey,
+                    () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-class HorarioInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    String text = newValue.text;
-    if (text.length > oldValue.text.length) {
-      if (text.length == 2 && !text.contains(':')) {
-        text += ':';
-      } else if (text.length == 3 && !text.contains(':')) {
-        text = text.substring(0, 2) + ':' + text.substring(2);
-      }
-    }
-    return TextEditingValue(
-        text: text, selection: TextSelection.collapsed(offset: text.length));
+  Widget botaoModal(String texto, Color cor, VoidCallback onTap) {
+    return SizedBox(
+      width: double.infinity,
+      height: 45,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: cor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: Text(texto, style: const TextStyle(color: Colors.white)),
+      ),
+    );
   }
 }
