@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:piteste/pages/home_empresa.dart';
 import 'homecliente.dart';
 import 'cadastro_empresa.dart';
+import 'home_empresa.dart';
 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
@@ -60,18 +62,13 @@ class _CadastroPageState extends State<CadastroPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeClientePage(
-            nome: nome,
-            telefone: telefone,
-          ),
+          builder: (context) => HomeClientePage(nome: nome, telefone: telefone),
         ),
       );
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const CadastroEmpresaPage(),
-        ),
+        MaterialPageRoute(builder: (context) => const HomeEmpresaPage()),
       );
     }
   }
@@ -96,9 +93,7 @@ class _CadastroPageState extends State<CadastroPage> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: [
                     // Cabeçalho com botão de voltar
@@ -113,7 +108,11 @@ class _CadastroPageState extends State<CadastroPage> {
                             top: 20,
                             left: 10,
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                               onPressed: () {
                                 Navigator.pop(context);
                               },
@@ -307,10 +306,7 @@ class _CadastroPageState extends State<CadastroPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Telefone:',
-            style: TextStyle(fontSize: 16),
-          ),
+          const Text('Telefone:', style: TextStyle(fontSize: 16)),
           const SizedBox(height: 5),
           TextField(
             controller: telefoneController,
@@ -360,9 +356,7 @@ class TelefoneInputFormatter extends TextInputFormatter {
 
     return TextEditingValue(
       text: textoFormatado,
-      selection: TextSelection.collapsed(
-        offset: textoFormatado.length,
-      ),
+      selection: TextSelection.collapsed(offset: textoFormatado.length),
     );
   }
 }
