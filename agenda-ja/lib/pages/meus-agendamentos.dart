@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'detalhes_agendamento.dart'; // Importa a tela de detalhes
 
 class MeusAgendamentosPage extends StatelessWidget {
   const MeusAgendamentosPage({super.key});
@@ -32,7 +33,7 @@ class MeusAgendamentosPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // Equilíbrio visual para centralizar a logo
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -65,12 +66,14 @@ class MeusAgendamentosPage extends StatelessWidget {
                       // SEÇÃO FUTUROS
                       secaoTitulo('Futuros:'),
                       cardAgendamento(
+                        context,
                         data: '10/06/2026',
                         local: 'Clinica Tesser - Concórdia',
                         horario: '16:50',
                         cor: const Color(0xFF111934),
                       ),
                       cardAgendamento(
+                        context,
                         data: '25/07/2026',
                         local: 'Hospital São Francisco',
                         horario: '08:10',
@@ -82,6 +85,7 @@ class MeusAgendamentosPage extends StatelessWidget {
                       // SEÇÃO PASSADOS
                       secaoTitulo('Passados:'),
                       cardAgendamento(
+                        context,
                         data: '28/05/2026',
                         local: 'Clinica vida - Concórdia',
                         horario: '15:30',
@@ -96,15 +100,16 @@ class MeusAgendamentosPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFB71C1C), // Vermelho escuro para o título
+                          color: Color(0xFFB71C1C),
                         ),
                       ),
                       const SizedBox(height: 10),
                       cardAgendamento(
+                        context,
                         data: '28/05/2026',
                         local: 'Salão Bela Vista - Irani',
                         horario: '18:00',
-                        cor: const Color(0xFFB71C1C), // Vermelho para o card
+                        cor: const Color(0xFFB71C1C),
                         isCancelado: true,
                       ),
                       const SizedBox(height: 30),
@@ -134,7 +139,8 @@ class MeusAgendamentosPage extends StatelessWidget {
     );
   }
 
-  Widget cardAgendamento({
+  Widget cardAgendamento(
+    BuildContext context, {
     required String data,
     required String local,
     required String horario,
@@ -166,14 +172,25 @@ class MeusAgendamentosPage extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 15),
           ),
           if (!isCancelado)
-            const Align(
+            Align(
               alignment: Alignment.bottomRight,
-              child: Text(
-                'Ver detalhes',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DetalhesAgendamentoPage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Ver detalhes',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),

@@ -28,59 +28,76 @@ class PerfilPage extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       height: 220, // Altura fixa para o cabeçalho
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       color: const Color(0xFF111934),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          Image.asset(
-                            'assets/logo.png',
-                            width: 60,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.circle,
-                                    color: Colors.white, size: 30),
+                          // Botão de Voltar
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                              onPressed: () => Navigator.pop(context),
+                            ),
                           ),
-                          const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              const CircleAvatar(
-                                radius: 45,
-                                backgroundColor: Colors.white24,
-                                child: Icon(Icons.person,
-                                    color: Colors.white, size: 50),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      nome,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w500,
+                          // Conteúdo Central do Cabeçalho
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/logo.png',
+                                    width: 60,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.circle,
+                                            color: Colors.white, size: 30),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      const CircleAvatar(
+                                        radius: 45,
+                                        backgroundColor: Colors.white24,
+                                        child: Icon(Icons.person,
+                                            color: Colors.white, size: 50),
                                       ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      'Telefone: $telefone',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 16,
+                                      const SizedBox(width: 20),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              nome,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              'Telefone: $telefone',
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
                     ),
 
                     // CONTEÚDO (Fundo Cinza)
-                    // Garantimos que ele ocupe no mínimo o resto da tela
                     Container(
                       width: double.infinity,
                       constraints: BoxConstraints(
@@ -112,7 +129,6 @@ class PerfilPage extends StatelessWidget {
                               onTap: () {},
                             ),
 
-                            // Espaçamento para empurrar o botão SAIR para baixo sem usar Spacer (que causa erro)
                             const SizedBox(height: 50),
 
                             Align(
