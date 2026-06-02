@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'pages/primeira_pg.dart';
 import 'pages/login_pg.dart';
 import 'pages/cadastro.dart';
-import 'pages/homecliente.dart';
 
 void main() {
   runApp(const MeuApp());
