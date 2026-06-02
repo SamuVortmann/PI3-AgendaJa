@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'agenda_empresa.dart';
+import 'dados_globais.dart';
+import 'cadastro.dart';
 
 class HomeEmpresaPage extends StatelessWidget {
   final String nomeEmpresa;
@@ -7,16 +10,14 @@ class HomeEmpresaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Simulação de dados para exemplo (em um app real viria de um banco ou provider)
     final List<Map<String, String>> agendamentos =
-        []; // Começa vazio como solicitado
+        DadosGlobais.getAgendamentosPorData('2026-05-28');
 
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
       body: SafeArea(
         child: Column(
           children: [
-            // CABEÇALHO (IDENTIDADE VISUAL)
             Container(
               width: double.infinity,
               height: 100,
@@ -27,18 +28,19 @@ class HomeEmpresaPage extends StatelessWidget {
                     top: 20,
                     left: 10,
                     child: IconButton(
-                      icon:
-                          const Icon(Icons.menu, color: Colors.white, size: 30),
-                      onPressed: () {
-                        // Menu lateral (Drawer)
-                      },
+                      icon: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {},
                     ),
                   ),
                   Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
+                      children: const [
+                        Text(
                           'A',
                           style: TextStyle(
                             color: Colors.white,
@@ -47,7 +49,7 @@ class HomeEmpresaPage extends StatelessWidget {
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        const Text(
+                        Text(
                           'Agenda Já',
                           style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
@@ -57,12 +59,13 @@ class HomeEmpresaPage extends StatelessWidget {
                 ],
               ),
             ),
-            // CORPO DA PÁGINA
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 30,
+                ),
                 decoration: const BoxDecoration(
                   color: Color(0xFFF3F3F3),
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
@@ -71,7 +74,6 @@ class HomeEmpresaPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // NOME DA EMPRESA (DINÂMICO)
                       Center(
                         child: Text(
                           nomeEmpresa,
@@ -83,12 +85,12 @@ class HomeEmpresaPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 35),
-
-                      // RESUMO DO DIA
                       const Text(
                         'Resumo do dia:',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Container(
@@ -104,32 +106,38 @@ class HomeEmpresaPage extends StatelessWidget {
                             Text(
                               '→ Hoje você tem ${agendamentos.length} agendamentos',
                               style: const TextStyle(
-                                  color: Colors.white, fontSize: 15),
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
                             ),
                             const Text(
-                              '→ 0 horários livres', // Exemplo estático
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 15),
+                              '→ 2 horários livres',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
                             ),
                             const SizedBox(height: 10),
                             const Align(
                               alignment: Alignment.bottomRight,
                               child: Text(
                                 'clique em agenda para verificar',
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 30),
-
-                      // PRÓXIMOS CLIENTES
                       const Text(
                         'Próximos clientes:',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Container(
@@ -144,41 +152,52 @@ class HomeEmpresaPage extends StatelessWidget {
                                 child: Text(
                                   'Nenhum agendamento para hoje',
                                   style: TextStyle(
-                                      color: Colors.white70,
-                                      fontStyle: FontStyle.italic),
+                                    color: Colors.white70,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
                               )
                             : Column(
-                                children: agendamentos.map((ag) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Row(
-                                      children: [
-                                        const Text('→ ',
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                        Text(
-                                          '${ag['nome']} - ${ag['horario']}',
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15),
+                                children: agendamentos
+                                    .map(
+                                      (ag) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 8,
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                        child: Row(
+                                          children: [
+                                            const Text(
+                                              '→ ',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${ag['nome']} - ${ag['horario']}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                               ),
                       ),
                       const SizedBox(height: 40),
-
-                      // BOTÕES DE AÇÃO
                       botaoAcao('Ver agenda', () {
-                        // Navegar para agenda
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AgendaPage(nomeEmpresa: nomeEmpresa),
+                          ),
+                        );
                       }),
                       const SizedBox(height: 15),
-                      botaoAcao('Ver clientes', () {
-                        // Navegar para clientes
-                      }),
+                      botaoAcao('Ver clientes', () {}),
                     ],
                   ),
                 ),
@@ -205,7 +224,10 @@ class HomeEmpresaPage extends StatelessWidget {
         child: Text(
           titulo,
           style: const TextStyle(
-              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
