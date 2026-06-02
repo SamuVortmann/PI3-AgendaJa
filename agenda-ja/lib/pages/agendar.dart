@@ -67,13 +67,12 @@ class _AgendarPageState extends State<AgendarPage> {
                   padding: const EdgeInsets.all(25),
                   child: Column(
                     children: [
-                      // BARRA DE PESQUISA E FILTRO (CORRIGIDO)
+                      // BARRA DE PESQUISA E FILTRO
                       Row(
                         children: [
-                          // Ícone de Filtro (Icons.tune) com Menu
                           PopupMenuButton<String>(
                             padding: EdgeInsets.zero,
-                            icon: const Icon(Icons.tune, size: 35, color: Colors.black87), // Ícone correto
+                            icon: const Icon(Icons.tune, size: 35, color: Colors.black87),
                             onSelected: (String value) {
                               setState(() => _filtroSelecionado = value);
                             },
@@ -101,6 +100,7 @@ class _AgendarPageState extends State<AgendarPage> {
                                   prefixIcon: Icon(Icons.search),
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                  hintStyle: TextStyle(fontWeight: FontWeight.normal), // Sem negrito
                                 ),
                               ),
                             ),
@@ -114,7 +114,7 @@ class _AgendarPageState extends State<AgendarPage> {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Chip(
-                              label: Text(_filtroSelecionado),
+                              label: Text(_filtroSelecionado, style: const TextStyle(fontWeight: FontWeight.normal)), // Sem negrito
                               onDeleted: () => setState(() => _filtroSelecionado = ''),
                               deleteIcon: const Icon(Icons.close, size: 18),
                             ),
@@ -126,7 +126,7 @@ class _AgendarPageState extends State<AgendarPage> {
                       // LISTA DE EMPRESAS
                       Expanded(
                         child: empresasFiltradas.isEmpty
-                            ? const Center(child: Text('Nenhuma empresa encontrada.'))
+                            ? const Center(child: Text('Nenhuma empresa encontrada.', style: TextStyle(fontWeight: FontWeight.normal))) // Sem negrito
                             : ListView.builder(
                                 itemCount: empresasFiltradas.length,
                                 itemBuilder: (context, index) {
@@ -141,14 +141,14 @@ class _AgendarPageState extends State<AgendarPage> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(empresa['nome']!, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                        Text(empresa['nome']!, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.normal)), // Sem negrito
                                         const SizedBox(height: 5),
-                                        Text(empresa['endereco']!, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                                        Text(empresa['endereco']!, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.normal)), // Sem negrito
                                         Align(
                                           alignment: Alignment.bottomRight,
                                           child: TextButton(
                                             onPressed: () {},
-                                            child: const Text('Detalhes', style: TextStyle(color: Colors.white54, fontStyle: FontStyle.italic)),
+                                            child: const Text('Detalhes', style: TextStyle(color: Colors.white54, fontStyle: FontStyle.italic, fontWeight: FontWeight.normal)), // Sem negrito
                                           ),
                                         )
                                       ],
@@ -175,7 +175,7 @@ class _AgendarPageState extends State<AgendarPage> {
         children: [
           if (_filtroSelecionado == valor) const Icon(Icons.check, size: 20, color: Color(0xFF111934)),
           const SizedBox(width: 10),
-          Text(valor),
+          Text(valor, style: const TextStyle(fontWeight: FontWeight.normal)), // Sem negrito
         ],
       ),
     );
