@@ -11,96 +11,22 @@ class _AgendarPageState extends State<AgendarPage> {
   final TextEditingController _buscaController = TextEditingController();
   String _filtroSelecionado = '';
 
-  // LISTA DE EMPRESAS PRÉ-DEFINIDAS PARA TESTE
+  // LISTA DE EMPRESAS PRÉ-DEFINIDAS
   final List<Map<String, String>> todasEmpresas = [
-    {
-      'nome': 'Prado Concept Salão de Beleza',
-      'endereco': 'Centro, Concórdia - SC',
-      'categoria': 'Beleza'
-    },
-    {
-      'nome': 'Salão Arte & Beleza',
-      'endereco': 'Bairro Nazaré, Concórdia - SC',
-      'categoria': 'Beleza'
-    },
-    {
-      'nome': 'Clinica Tesser',
-      'endereco': 'Centro, Concórdia - SC',
-      'categoria': 'Saúde'
-    },
-    {
-      'nome': 'Hospital São Francisco',
-      'endereco': 'Centro, Concórdia - SC',
-      'categoria': 'Saúde'
-    },
-    {
-      'nome': 'Escola Aprender',
-      'endereco': 'Bairro das Nações, Concórdia - SC',
-      'categoria': 'Educação'
-    },
-    {
-      'nome': 'JCS Estética',
-      'endereco': 'Centro, Concórdia - SC',
-      'categoria': 'Beleza'
-    },
+    {'nome': 'Prado Concept Salão de Beleza', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Beleza'},
+    {'nome': 'Salão Arte & Beleza', 'endereco': 'Bairro Nazaré, Concórdia - SC', 'categoria': 'Beleza'},
+    {'nome': 'Clinica Tesser', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Saúde'},
+    {'nome': 'Hospital São Francisco', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Saúde'},
+    {'nome': 'Escola Aprender', 'endereco': 'Bairro das Nações, Concórdia - SC', 'categoria': 'Educação'},
+    {'nome': 'JCS Estética', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Beleza'},
   ];
 
   List<Map<String, String>> get empresasFiltradas {
     return todasEmpresas.where((empresa) {
-      final matchesBusca = empresa['nome']!
-          .toLowerCase()
-          .contains(_buscaController.text.toLowerCase());
-      final matchesFiltro =
-          _filtroSelecionado.isEmpty || empresa['categoria'] == _filtroSelecionado;
+      final matchesBusca = empresa['nome']!.toLowerCase().contains(_buscaController.text.toLowerCase());
+      final matchesFiltro = _filtroSelecionado.isEmpty || empresa['categoria'] == _filtroSelecionado;
       return matchesBusca && matchesFiltro;
     }).toList();
-  }
-
-  void _abrirFiltro() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF111934),
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Filtrar por Categoria',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              _itemFiltro('Beleza'),
-              _itemFiltro('Saúde'),
-              _itemFiltro('Educação'),
-              _itemFiltro('Outros'),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () {
-                  setState(() => _filtroSelecionado = '');
-                  Navigator.pop(context);
-                },
-                child: const Text('Limpar Filtro', style: TextStyle(color: Colors.redAccent)),
-              )
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _itemFiltro(String categoria) {
-    return ListTile(
-      title: Text(categoria, style: const TextStyle(color: Colors.white)),
-      trailing: _filtroSelecionado == categoria
-          ? const Icon(Icons.check, color: Colors.white)
-          : null,
-      onTap: () {
-        setState(() => _filtroSelecionado = categoria);
-        Navigator.pop(context);
-      },
-    );
   }
 
   @override
@@ -110,7 +36,7 @@ class _AgendarPageState extends State<AgendarPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // CABEÇALHO COM LOGO E VOLTAR
+            // CABEÇALHO
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: Row(
@@ -141,13 +67,24 @@ class _AgendarPageState extends State<AgendarPage> {
                   padding: const EdgeInsets.all(25),
                   child: Column(
                     children: [
-                      // BARRA DE PESQUISA E FILTRO
+                      // BARRA DE PESQUISA E FILTRO (CORRIGIDO)
                       Row(
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.filter_list, size: 35),
-                            onPressed: _abrirFiltro,
+                          // Ícone de Filtro (Icons.tune) com Menu
+                          PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.tune, size: 35, color: Colors.black87), // Ícone correto
+                            onSelected: (String value) {
+                              setState(() => _filtroSelecionado = value);
+                            },
+                            itemBuilder: (BuildContext context) => [
+                              _buildPopupItem('Beleza'),
+                              _buildPopupItem('Saúde'),
+                              _buildPopupItem('Educação'),
+                              _buildPopupItem('Outros'),
+                            ],
                           ),
+                          const SizedBox(width: 5),
                           Expanded(
                             child: Container(
                               height: 50,
@@ -174,9 +111,13 @@ class _AgendarPageState extends State<AgendarPage> {
                       if (_filtroSelecionado.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
-                          child: Chip(
-                            label: Text(_filtroSelecionado),
-                            onDeleted: () => setState(() => _filtroSelecionado = ''),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Chip(
+                              label: Text(_filtroSelecionado),
+                              onDeleted: () => setState(() => _filtroSelecionado = ''),
+                              deleteIcon: const Icon(Icons.close, size: 18),
+                            ),
                           ),
                         ),
 
@@ -223,6 +164,19 @@ class _AgendarPageState extends State<AgendarPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupItem(String valor) {
+    return PopupMenuItem<String>(
+      value: valor,
+      child: Row(
+        children: [
+          if (_filtroSelecionado == valor) const Icon(Icons.check, size: 20, color: Color(0xFF111934)),
+          const SizedBox(width: 10),
+          Text(valor),
+        ],
       ),
     );
   }
