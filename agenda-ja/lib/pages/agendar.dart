@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AgendarPage extends StatefulWidget {
-  const AgendarPage({super.key});
+  // 1. Adicione o campo nomeEmpresa aqui
+  final String nomeEmpresa;
+
+  // 2. Atualize o construtor para receber o nomeEmpresa
+  const AgendarPage({super.key, required this.nomeEmpresa});
 
   @override
   State<AgendarPage> createState() => _AgendarPageState();
@@ -13,18 +17,46 @@ class _AgendarPageState extends State<AgendarPage> {
 
   // LISTA DE EMPRESAS PRÉ-DEFINIDAS
   final List<Map<String, String>> todasEmpresas = [
-    {'nome': 'Prado Concept Salão de Beleza', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Beleza'},
-    {'nome': 'Salão Arte & Beleza', 'endereco': 'Bairro Nazaré, Concórdia - SC', 'categoria': 'Beleza'},
-    {'nome': 'Clinica Tesser', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Saúde'},
-    {'nome': 'Hospital São Francisco', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Saúde'},
-    {'nome': 'Escola Aprender', 'endereco': 'Bairro das Nações, Concórdia - SC', 'categoria': 'Educação'},
-    {'nome': 'JCS Estética', 'endereco': 'Centro, Concórdia - SC', 'categoria': 'Beleza'},
+    {
+      'nome': 'Prado Concept Salão de Beleza',
+      'endereco': 'Centro, Concórdia - SC',
+      'categoria': 'Beleza',
+    },
+    {
+      'nome': 'Salão Arte & Beleza',
+      'endereco': 'Bairro Nazaré, Concórdia - SC',
+      'categoria': 'Beleza',
+    },
+    {
+      'nome': 'Clinica Tesser',
+      'endereco': 'Centro, Concórdia - SC',
+      'categoria': 'Saúde',
+    },
+    {
+      'nome': 'Hospital São Francisco',
+      'endereco': 'Centro, Concórdia - SC',
+      'categoria': 'Saúde',
+    },
+    {
+      'nome': 'Escola Aprender',
+      'endereco': 'Bairro das Nações, Concórdia - SC',
+      'categoria': 'Educação',
+    },
+    {
+      'nome': 'JCS Estética',
+      'endereco': 'Centro, Concórdia - SC',
+      'categoria': 'Beleza',
+    },
   ];
 
   List<Map<String, String>> get empresasFiltradas {
     return todasEmpresas.where((empresa) {
-      final matchesBusca = empresa['nome']!.toLowerCase().contains(_buscaController.text.toLowerCase());
-      final matchesFiltro = _filtroSelecionado.isEmpty || empresa['categoria'] == _filtroSelecionado;
+      final matchesBusca = empresa['nome']!.toLowerCase().contains(
+        _buscaController.text.toLowerCase(),
+      );
+      final matchesFiltro =
+          _filtroSelecionado.isEmpty ||
+          empresa['categoria'] == _filtroSelecionado;
       return matchesBusca && matchesFiltro;
     }).toList();
   }
@@ -42,12 +74,21 @@ class _AgendarPageState extends State<AgendarPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   Expanded(
                     child: Center(
-                      child: Image.asset('assets/logo.png', width: 80, errorBuilder: (context, error, stackTrace) => const Icon(Icons.circle, color: Colors.white)),
+                      child: Image.asset(
+                        'assets/logo.png',
+                        width: 80,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.circle, color: Colors.white),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 48),
@@ -72,7 +113,11 @@ class _AgendarPageState extends State<AgendarPage> {
                         children: [
                           PopupMenuButton<String>(
                             padding: EdgeInsets.zero,
-                            icon: const Icon(Icons.tune, size: 35, color: Colors.black87),
+                            icon: const Icon(
+                              Icons.tune,
+                              size: 35,
+                              color: Colors.black87,
+                            ),
                             onSelected: (String value) {
                               setState(() => _filtroSelecionado = value);
                             },
@@ -99,23 +144,33 @@ class _AgendarPageState extends State<AgendarPage> {
                                   hintText: 'Buscar empresa ou serviço...',
                                   prefixIcon: Icon(Icons.search),
                                   border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(vertical: 12),
-                                  hintStyle: TextStyle(fontWeight: FontWeight.normal), // Sem negrito
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  hintStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      
+
                       if (_filtroSelecionado.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Chip(
-                              label: Text(_filtroSelecionado, style: const TextStyle(fontWeight: FontWeight.normal)), // Sem negrito
-                              onDeleted: () => setState(() => _filtroSelecionado = ''),
+                              label: Text(
+                                _filtroSelecionado,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              onDeleted: () =>
+                                  setState(() => _filtroSelecionado = ''),
                               deleteIcon: const Icon(Icons.close, size: 18),
                             ),
                           ),
@@ -126,7 +181,14 @@ class _AgendarPageState extends State<AgendarPage> {
                       // LISTA DE EMPRESAS
                       Expanded(
                         child: empresasFiltradas.isEmpty
-                            ? const Center(child: Text('Nenhuma empresa encontrada.', style: TextStyle(fontWeight: FontWeight.normal))) // Sem negrito
+                            ? const Center(
+                                child: Text(
+                                  'Nenhuma empresa encontrada.',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              )
                             : ListView.builder(
                                 itemCount: empresasFiltradas.length,
                                 itemBuilder: (context, index) {
@@ -139,18 +201,42 @@ class _AgendarPageState extends State<AgendarPage> {
                                       borderRadius: BorderRadius.circular(15),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(empresa['nome']!, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.normal)), // Sem negrito
+                                        Text(
+                                          empresa['nome']!,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        ),
                                         const SizedBox(height: 5),
-                                        Text(empresa['endereco']!, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.normal)), // Sem negrito
+                                        Text(
+                                          empresa['endereco']!,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        ),
                                         Align(
                                           alignment: Alignment.bottomRight,
                                           child: TextButton(
-                                            onPressed: () {},
-                                            child: const Text('Detalhes', style: TextStyle(color: Colors.white54, fontStyle: FontStyle.italic, fontWeight: FontWeight.normal)), // Sem negrito
+                                            onPressed: () {
+                                              // Aqui você pode usar widget.nomeEmpresa se precisar
+                                            },
+                                            child: const Text(
+                                              'Detalhes',
+                                              style: TextStyle(
+                                                color: Colors.white54,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                            ),
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   );
@@ -173,9 +259,10 @@ class _AgendarPageState extends State<AgendarPage> {
       value: valor,
       child: Row(
         children: [
-          if (_filtroSelecionado == valor) const Icon(Icons.check, size: 20, color: Color(0xFF111934)),
+          if (_filtroSelecionado == valor)
+            const Icon(Icons.check, size: 20, color: Color(0xFF111934)),
           const SizedBox(width: 10),
-          Text(valor, style: const TextStyle(fontWeight: FontWeight.normal)), // Sem negrito
+          Text(valor, style: const TextStyle(fontWeight: FontWeight.normal)),
         ],
       ),
     );
