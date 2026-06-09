@@ -23,20 +23,42 @@ class _HomeClientePageState extends State<HomeClientePage> {
   String filtroSelecionado = 'Todos';
 
   final List<String> meses = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
 
-  final List<String> categoriasFiltro = ['Todos', 'Beleza', 'Saúde', 'Educação', 'Outros'];
+  final List<String> categoriasFiltro = [
+    'Todos',
+    'Beleza',
+    'Saúde',
+    'Educação',
+    'Outros',
+  ];
 
   final List<int> diasComCompromisso = [];
   bool mostrarCompromissos = false;
 
   int diasDoMes() {
     switch (mesAtual + 1) {
-      case 2: return 28;
-      case 4: case 6: case 9: case 11: return 30;
-      default: return 31;
+      case 2:
+        return 28;
+      case 4:
+      case 6:
+      case 9:
+      case 11:
+        return 30;
+      default:
+        return 31;
     }
   }
 
@@ -50,18 +72,13 @@ class _HomeClientePageState extends State<HomeClientePage> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFF111934),
-      drawer: MenuCliente(
-        nome: widget.nome,
-        telefone: widget.telefone,
-      ),
+      drawer: MenuCliente(nome: widget.nome, telefone: widget.telefone),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: [
                     // NAVBAR
@@ -77,7 +94,11 @@ class _HomeClientePageState extends State<HomeClientePage> {
                             onPressed: () {
                               _scaffoldKey.currentState?.openDrawer();
                             },
-                            icon: const Icon(Icons.menu, color: Colors.white, size: 34),
+                            icon: const Icon(
+                              Icons.menu,
+                              color: Colors.white,
+                              size: 34,
+                            ),
                           ),
                           Image.asset(
                             'assets/logo.png',
@@ -122,10 +143,14 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 Expanded(
                                   child: Container(
                                     height: 50,
-                                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      border: Border.all(color: const Color(0xFF111934)),
+                                      border: Border.all(
+                                        color: const Color(0xFF111934),
+                                      ),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: const Row(
@@ -135,11 +160,16 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                             decoration: InputDecoration(
                                               hintText: 'Buscar serviço...',
                                               border: InputBorder.none,
-                                              hintStyle: TextStyle(fontSize: 14),
+                                              hintStyle: TextStyle(
+                                                fontSize: 14,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                        Icon(Icons.search, color: Color(0xFF111934))
+                                        Icon(
+                                          Icons.search,
+                                          color: Color(0xFF111934),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -150,18 +180,25 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                   width: 50,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    border: Border.all(color: const Color(0xFF111934)),
+                                    border: Border.all(
+                                      color: const Color(0xFF111934),
+                                    ),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: PopupMenuButton<String>(
-                                    icon: const Icon(Icons.tune, color: Color(0xFF111934)),
+                                    icon: const Icon(
+                                      Icons.tune,
+                                      color: Color(0xFF111934),
+                                    ),
                                     onSelected: (String value) {
                                       setState(() {
                                         filtroSelecionado = value;
                                       });
                                     },
                                     itemBuilder: (BuildContext context) {
-                                      return categoriasFiltro.map((String categoria) {
+                                      return categoriasFiltro.map((
+                                        String categoria,
+                                      ) {
                                         return PopupMenuItem<String>(
                                           value: categoria,
                                           child: Text(categoria),
@@ -172,10 +209,9 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 ),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 18),
 
-                            // BOTÃO AGENDAR (Configurado para abrir a AgendarPage)
                             SizedBox(
                               width: 120,
                               height: 40,
@@ -184,7 +220,12 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const AgendarPage(),
+                                      // Corrigido: Agora passa o parâmetro nomeEmpresa exigido pela AgendarPage
+                                      // Como esta é a visão do cliente agendando, podemos passar uma string vazia
+                                      // ou o nome do cliente se a página de agendamento precisar identificar quem está agendando.
+                                      // No seu caso, a AgendarPage agora pede um nomeEmpresa.
+                                      builder: (context) =>
+                                          AgendarPage(nomeEmpresa: widget.nome),
                                     ),
                                   );
                                 },
@@ -197,13 +238,19 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 ),
                                 child: const Text(
                                   '+ Agendar',
-                                  style: TextStyle(color: Colors.white, fontSize: 15),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 30),
 
-                            const Text('Sua agenda', style: TextStyle(fontSize: 18)),
+                            const Text(
+                              'Sua agenda',
+                              style: TextStyle(fontSize: 18),
+                            ),
                             const SizedBox(height: 10),
 
                             // CALENDÁRIO
@@ -212,7 +259,9 @@ class _HomeClientePageState extends State<HomeClientePage> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                border: Border.all(color: const Color(0xFF06153D)),
+                                border: Border.all(
+                                  color: const Color(0xFF06153D),
+                                ),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Column(
@@ -226,17 +275,27 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                             if (mesAtual > 0) mesAtual--;
                                           });
                                         },
-                                        icon: const Icon(Icons.arrow_back_ios, size: 18),
+                                        icon: const Icon(
+                                          Icons.arrow_back_ios,
+                                          size: 18,
+                                        ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 5,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF111934),
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                         child: Text(
                                           meses[mesAtual],
-                                          style: const TextStyle(color: Colors.white),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                       IconButton(
@@ -245,32 +304,47 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                             if (mesAtual < 11) mesAtual++;
                                           });
                                         },
-                                        icon: const Icon(Icons.arrow_forward_ios, size: 18),
+                                        icon: const Icon(
+                                          Icons.arrow_forward_ios,
+                                          size: 18,
+                                        ),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 18),
                                   const Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
                                     children: [
-                                      Text('D'), Text('S'), Text('T'), Text('Q'),
-                                      Text('Q'), Text('S'), Text('S'),
+                                      Text('D'),
+                                      Text('S'),
+                                      Text('T'),
+                                      Text('Q'),
+                                      Text('Q'),
+                                      Text('S'),
+                                      Text('S'),
                                     ],
                                   ),
                                   const SizedBox(height: 18),
                                   GridView.builder(
                                     shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemCount: diasDoMes() + primeiroDiaMes(),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 7,
-                                      childAspectRatio: 1,
-                                    ),
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 7,
+                                          childAspectRatio: 1,
+                                        ),
                                     itemBuilder: (context, index) {
-                                      if (index < primeiroDiaMes()) return const SizedBox();
+                                      if (index < primeiroDiaMes())
+                                        return const SizedBox();
                                       int dia = index - primeiroDiaMes() + 1;
                                       return Center(
-                                        child: Text('$dia', style: const TextStyle(fontSize: 16)),
+                                        child: Text(
+                                          '$dia',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
                                       );
                                     },
                                   ),
@@ -278,7 +352,10 @@ class _HomeClientePageState extends State<HomeClientePage> {
                               ),
                             ),
                             const SizedBox(height: 30),
-                            const Text('Agendamentos do mês', style: TextStyle(fontSize: 18)),
+                            const Text(
+                              'Agendamentos do mês',
+                              style: TextStyle(fontSize: 18),
+                            ),
                             const SizedBox(height: 12),
                             Container(
                               width: double.infinity,
@@ -292,7 +369,10 @@ class _HomeClientePageState extends State<HomeClientePage> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   'Sem agendamentos',
-                                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),
