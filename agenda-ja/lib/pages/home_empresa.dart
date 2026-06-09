@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'agenda_empresa.dart';
+import 'agendar.dart';
 import 'dados_globais.dart';
-import 'cadastro.dart';
+// import 'cadastro.dart'; // Removido pois não está sendo utilizado nesta página
 
 class HomeEmpresaPage extends StatelessWidget {
   final String nomeEmpresa;
@@ -10,14 +10,19 @@ class HomeEmpresaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Busca os agendamentos para a data de hoje (ou uma data específica)
+    // Sugestão: usar uma data dinâmica se o DadosGlobais suportar,
+    // mas mantive a lógica do seu código original com uma pequena melhoria.
+    final String dataHoje = '2026-05-28';
     final List<Map<String, String>> agendamentos =
-        DadosGlobais.getAgendamentosPorData('2026-05-28');
+        DadosGlobais.getAgendamentosPorData(dataHoje);
 
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
       body: SafeArea(
         child: Column(
           children: [
+            // Header / Logo
             Container(
               width: double.infinity,
               height: 100,
@@ -33,7 +38,9 @@ class HomeEmpresaPage extends StatelessWidget {
                         color: Colors.white,
                         size: 30,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        // Espaço para abrir um Drawer ou Menu
+                      },
                     ),
                   ),
                   Center(
@@ -59,6 +66,7 @@ class HomeEmpresaPage extends StatelessWidget {
                 ],
               ),
             ),
+            // Conteúdo Principal
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -111,7 +119,7 @@ class HomeEmpresaPage extends StatelessWidget {
                               ),
                             ),
                             const Text(
-                              '→ 2 horários livres',
+                              '→ 2 horários livres', // Valor estático conforme original
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -172,11 +180,13 @@ class HomeEmpresaPage extends StatelessWidget {
                                                 color: Colors.white,
                                               ),
                                             ),
-                                            Text(
-                                              '${ag['nome']} - ${ag['horario']}',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
+                                            Expanded(
+                                              child: Text(
+                                                '${ag['nome'] ?? 'Cliente'} - ${ag['horario'] ?? '--:--'}',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -192,12 +202,14 @@ class HomeEmpresaPage extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                AgendaPage(nomeEmpresa: nomeEmpresa),
+                                AgendarPage(nomeEmpresa: nomeEmpresa),
                           ),
                         );
                       }),
                       const SizedBox(height: 15),
-                      botaoAcao('Ver clientes', () {}),
+                      botaoAcao('Ver clientes', () {
+                        // Lógica para ver clientes
+                      }),
                     ],
                   ),
                 ),
