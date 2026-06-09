@@ -68,7 +68,7 @@ class _CadastroPageState extends State<CadastroPage> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const HomeEmpresaPage()),
+        MaterialPageRoute(builder: (context) => const HomeEmpresaPage ()),
       );
     }
   }
