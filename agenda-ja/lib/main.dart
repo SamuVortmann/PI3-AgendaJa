@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'pages/primeira_pg.dart';
 import 'pages/login_pg.dart';
 import 'pages/cadastro.dart';
+import 'pages/detalhes_empresa.dart';
 
 void main() {
   runApp(const MeuApp());
@@ -18,6 +19,8 @@ class MeuApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginPg(),
         '/cadastro': (context) => const CadastroPage(),
+        '/detalhes_empresa': (context) =>
+            const AgendamentoEmpresaDetalhesPage(),
       },
 
       home: const PaginaInicial(),

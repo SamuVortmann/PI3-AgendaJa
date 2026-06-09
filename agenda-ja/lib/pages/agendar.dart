@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AgendarPage extends StatefulWidget {
-  // 1. Adicione o campo nomeEmpresa aqui
   final String nomeEmpresa;
 
-  // 2. Atualize o construtor para receber o nomeEmpresa
   const AgendarPage({super.key, required this.nomeEmpresa});
 
   @override
@@ -59,6 +57,12 @@ class _AgendarPageState extends State<AgendarPage> {
           empresa['categoria'] == _filtroSelecionado;
       return matchesBusca && matchesFiltro;
     }).toList();
+  }
+
+  @override
+  void dispose() {
+    _buscaController.dispose();
+    super.dispose();
   }
 
   @override
@@ -225,7 +229,11 @@ class _AgendarPageState extends State<AgendarPage> {
                                           alignment: Alignment.bottomRight,
                                           child: TextButton(
                                             onPressed: () {
-                                              // Aqui você pode usar widget.nomeEmpresa se precisar
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/detalhes_empresa',
+                                                arguments: empresa,
+                                              );
                                             },
                                             child: const Text(
                                               'Detalhes',
@@ -268,3 +276,11 @@ class _AgendarPageState extends State<AgendarPage> {
     );
   }
 }
+
+// No seu MaterialApp, garanta que a rota esteja registrada, por exemplo:
+// routes: {
+//   '/detalhes_empresa': (context) => const DetalhesEmpresaPage(),
+// },
+//
+// Se a rota no seu projeto estiver cadastrada com barra, use '/detalhes_empresa'
+// também no Navigator.pushNamed.
