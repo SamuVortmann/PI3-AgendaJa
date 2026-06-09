@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:piteste/pages/home_empresa.dart';
 import 'homecliente.dart';
-import 'cadastro_empresa.dart';
 import 'home_empresa.dart';
 
 class CadastroPage extends StatefulWidget {
@@ -66,9 +64,12 @@ class _CadastroPageState extends State<CadastroPage> {
         ),
       );
     } else {
+      // Corrigido para passar o parâmetro nomeEmpresa exigido pela HomeEmpresaPage
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const HomeEmpresaPage ()),
+        MaterialPageRoute(
+          builder: (context) => HomeEmpresaPage(nomeEmpresa: nome),
+        ),
       );
     }
   }
@@ -195,7 +196,7 @@ class _CadastroPageState extends State<CadastroPage> {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      Radio(
+                                      Radio<String>(
                                         value: 'cliente',
                                         groupValue: tipoConta,
                                         activeColor: const Color(0xFF111934),
@@ -213,7 +214,7 @@ class _CadastroPageState extends State<CadastroPage> {
                                   ),
                                   Row(
                                     children: [
-                                      Radio(
+                                      Radio<String>(
                                         value: 'empresa',
                                         groupValue: tipoConta,
                                         activeColor: const Color(0xFF111934),
@@ -339,8 +340,12 @@ class TelefoneInputFormatter extends TextInputFormatter {
     String textoFormatado = '';
 
     if (numeros.isNotEmpty) {
-      textoFormatado +=
-          '(${numeros.substring(0, numeros.length >= 2 ? 2 : numeros.length)})';
+      textoFormatado += '(';
+      textoFormatado += numeros.substring(
+        0,
+        numeros.length >= 2 ? 2 : numeros.length,
+      );
+      if (numeros.length >= 2) textoFormatado += ')';
     }
 
     if (numeros.length > 2) {
