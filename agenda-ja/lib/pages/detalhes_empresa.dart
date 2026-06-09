@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'confirmacao_agendamento.dart';
 
 class AgendamentoEmpresaDetalhesPage extends StatefulWidget {
   const AgendamentoEmpresaDetalhesPage({super.key});
@@ -106,9 +107,7 @@ class _AgendamentoEmpresaDetalhesPageState
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Color(0xFFF1F1F1),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(45),
-                  ),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
                 ),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(25),
@@ -203,9 +202,7 @@ class _AgendamentoEmpresaDetalhesPageState
                                   ),
                                   child: Text(
                                     meses[mesAtual],
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                    ),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                                 IconButton(
@@ -225,8 +222,7 @@ class _AgendamentoEmpresaDetalhesPageState
                             const SizedBox(height: 15),
 
                             const Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceAround,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 Text('D'),
                                 Text('S'),
@@ -242,25 +238,21 @@ class _AgendamentoEmpresaDetalhesPageState
 
                             GridView.builder(
                               shrinkWrap: true,
-                              physics:
-                                  const NeverScrollableScrollPhysics(),
-                              itemCount:
-                                  diasDoMes() + primeiroDiaMes(),
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: diasDoMes() + primeiroDiaMes(),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 7,
-                                childAspectRatio: 1,
-                              ),
+                                    crossAxisCount: 7,
+                                    childAspectRatio: 1,
+                                  ),
                               itemBuilder: (context, index) {
                                 if (index < primeiroDiaMes()) {
                                   return const SizedBox();
                                 }
 
-                                int dia =
-                                    index - primeiroDiaMes() + 1;
+                                int dia = index - primeiroDiaMes() + 1;
 
-                                bool isSelecionado =
-                                    dia == diaSelecionado;
+                                bool isSelecionado = dia == diaSelecionado;
 
                                 return Center(
                                   child: GestureDetector(
@@ -270,12 +262,10 @@ class _AgendamentoEmpresaDetalhesPageState
                                       });
                                     },
                                     child: Container(
-                                      padding:
-                                          const EdgeInsets.all(8),
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
                                         color: isSelecionado
-                                            ? const Color(
-                                                0xFF111934)
+                                            ? const Color(0xFF111934)
                                             : Colors.transparent,
                                         shape: BoxShape.circle,
                                       ),
@@ -285,10 +275,9 @@ class _AgendamentoEmpresaDetalhesPageState
                                           color: isSelecionado
                                               ? Colors.white
                                               : Colors.black,
-                                          fontWeight:
-                                              isSelecionado
-                                                  ? FontWeight.bold
-                                                  : FontWeight.normal,
+                                          fontWeight: isSelecionado
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
                                         ),
                                       ),
                                     ),
@@ -311,8 +300,7 @@ class _AgendamentoEmpresaDetalhesPageState
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                               'HORÁRIOS DISPONÍVEIS:',
@@ -326,10 +314,8 @@ class _AgendamentoEmpresaDetalhesPageState
                               spacing: 12,
                               runSpacing: 12,
                               children: horariosDisponiveis.map((h) {
-                                bool isOcupado =
-                                    horariosOcupados.contains(h);
-                                bool isSelecionado =
-                                    h == horarioSelecionado;
+                                bool isOcupado = horariosOcupados.contains(h);
+                                bool isSelecionado = h == horarioSelecionado;
 
                                 return GestureDetector(
                                   onTap: isOcupado
@@ -347,21 +333,17 @@ class _AgendamentoEmpresaDetalhesPageState
                                       color: isOcupado
                                           ? Colors.red.withOpacity(0.7)
                                           : (isSelecionado
-                                              ? Colors.green
-                                              : const Color(
-                                                  0xFFD9D9D9)),
-                                      borderRadius:
-                                          BorderRadius.circular(10),
+                                                ? Colors.green
+                                                : const Color(0xFFD9D9D9)),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Text(
                                       h,
                                       style: TextStyle(
-                                        color: isOcupado ||
-                                                isSelecionado
+                                        color: isOcupado || isSelecionado
                                             ? Colors.white
                                             : Colors.black,
-                                        fontWeight:
-                                            FontWeight.bold,
+                                        fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
                                     ),
@@ -375,15 +357,21 @@ class _AgendamentoEmpresaDetalhesPageState
                                 width: 200,
                                 height: 40,
                                 child: ElevatedButton(
-                                  onPressed:
-                                      horarioSelecionado == null
-                                          ? null
-                                          : () {},
+                                  onPressed: horarioSelecionado == null
+                                      ? null
+                                      : () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const ConfirmacaoAgendamentoPage(),
+                                            ),
+                                          );
+                                        },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.green,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
                                   child: const Text(
