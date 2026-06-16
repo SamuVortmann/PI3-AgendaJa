@@ -1,22 +1,29 @@
 {
   "name": "agenda-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API REST do Agenda Já - gestão de agendamentos",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:schema": "node database/runSchema.js",
+    "db:seed": "node database/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "pg": "^8.21.0"
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^4.2.0",
+    "pg": "^8.21.0",
+    "pino": "^9.7.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
