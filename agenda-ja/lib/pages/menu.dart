@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'perfil_cliente.dart';
 import 'meus-agendamentos.dart'; // Importa a tela de agendamentos
+import 'notificacoes.dart'; // Importa a tela de notificações
 
 class MenuCliente extends StatelessWidget {
   final String nome;
@@ -117,7 +118,13 @@ class MenuCliente extends StatelessWidget {
               context: context,
               titulo: 'Notificações',
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Fecha o menu lateral
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificacoesPage(), // Navega para a tela de notificações
+                  ),
+                );
               },
             ),
 
