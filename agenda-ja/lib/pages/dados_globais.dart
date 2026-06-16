@@ -1,8 +1,8 @@
 class DadosGlobais {
-  // Lista de empresas cadastradas (conforme sua estrutura)
+  // Lista de empresas cadastradas
   static List<Map<String, String>> empresasCadastradas = [];
 
-  // Mapa de agendamentos por data (conforme sua estrutura)
+  // Mapa de agendamentos por data
   static Map<String, List<Map<String, String>>> agendamentos = {
     '2026-05-28': [
       {
@@ -10,7 +10,7 @@ class DadosGlobais {
         'horario': '09:00',
         'telefone': '(11) 98888-7777',
         'status': 'Pendente',
-        'data': '2026-05-28', // Adicionado para facilitar busca de histórico
+        'data': '2026-05-28',
       },
       {
         'nome': 'Ronaldo dos Santos',
@@ -29,7 +29,39 @@ class DadosGlobais {
     ],
   };
 
-  // Função para adicionar uma nova empresa (conforme sua estrutura)
+  // Lista de agendamentos do cliente
+  static List<Map<String, dynamic>> meusAgendamentosCliente = [
+    {
+      'id': '1',
+      'data': '10/06/2026',
+      'local': 'Clinica Tesser - Concórdia',
+      'horario': '16:50',
+      'status': 'Futuro',
+    },
+    {
+      'id': '2',
+      'data': '25/07/2026',
+      'local': 'Hospital São Francisco',
+      'horario': '08:10',
+      'status': 'Futuro',
+    },
+    {
+      'id': '3',
+      'data': '28/05/2026',
+      'local': 'Clinica Vida - Concórdia',
+      'horario': '15:30',
+      'status': 'Passado',
+    },
+    {
+      'id': '4',
+      'data': '28/05/2026',
+      'local': 'Salão Bela Vista - Irani',
+      'horario': '18:00',
+      'status': 'Cancelado',
+    },
+  ];
+
+  // Adicionar empresa
   static void adicionarEmpresa({
     required String nome,
     required String endereco,
@@ -42,51 +74,74 @@ class DadosGlobais {
     });
   }
 
-  // Função para buscar agendamentos de uma data específica (conforme sua estrutura)
+  // Buscar agendamentos por data
   static List<Map<String, String>> getAgendamentosPorData(String data) {
     return agendamentos[data] ?? [];
   }
 
-  // --- FUNÇÕES ADICIONAIS PARA FUNCIONALIDADE TOTAL ---
+  // Cancelar agendamento do cliente
+  static void cancelarAgendamento(String id) {
+    int index = meusAgendamentosCliente.indexWhere((ag) => ag['id'] == id);
 
-  // Função para adicionar um novo agendamento dinamicamente
+    if (index != -1) {
+      meusAgendamentosCliente[index]['status'] = 'Cancelado';
+    }
+  }
+
+  // Adicionar novo agendamento
   static void adicionarAgendamento(Map<String, String> novoAgendamento) {
     String data = novoAgendamento['data'] ?? 'sem-data';
+
     if (!agendamentos.containsKey(data)) {
       agendamentos[data] = [];
     }
+
     agendamentos[data]!.add(novoAgendamento);
   }
 
-  // Função para buscar o histórico de um cliente em todas as datas
+  // Buscar histórico completo de um cliente
   static List<Map<String, String>> getHistoricoCliente(String nomeCliente) {
     List<Map<String, String>> historico = [];
+
     agendamentos.forEach((data, lista) {
-      for (var ag in lista) {
-        if (ag['nome'] == nomeCliente) {
-          historico.add(ag);
+      for (var agendamento in lista) {
+        if (agendamento['nome'] == nomeCliente) {
+          historico.add(agendamento);
         }
       }
     });
+
     return historico;
   }
 
-  // Obter o último atendimento (ex: o primeiro encontrado no histórico)
+  // Último atendimento
   static Map<String, String>? getUltimoAtendimento(String nomeCliente) {
     final historico = getHistoricoCliente(nomeCliente);
-    return historico.isNotEmpty ? historico.first : null;
+
+    if (historico.isNotEmpty) {
+      return historico.first;
+    }
+
+    return null;
   }
 
-  // Obter o próximo atendimento (ex: o segundo encontrado no histórico)
+  // Próximo atendimento
   static Map<String, String>? getProximoAtendimento(String nomeCliente) {
     final historico = getHistoricoCliente(nomeCliente);
-    return historico.length > 1 ? historico[1] : null;
+
+    if (historico.length > 1) {
+      return historico[1];
+    }
+
+    return null;
   }
 
-  // Obter atendimentos cancelados
+  // Atendimentos cancelados
   static List<Map<String, String>> getCancelados(String nomeCliente) {
-    return getHistoricoCliente(
-      nomeCliente,
-    ).where((ag) => ag['status']?.toLowerCase() == 'cancelado').toList();
+    return getHistoricoCliente(nomeCliente)
+        .where(
+          (agendamento) => agendamento['status']?.toLowerCase() == 'cancelado',
+        )
+        .toList();
   }
 }
