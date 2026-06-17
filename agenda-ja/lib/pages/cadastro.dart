@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'homecliente.dart';
-import 'home_empresa.dart';
+import 'cadastro_empresa.dart'; // Importação da nova página
 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
@@ -16,72 +16,47 @@ class _CadastroPageState extends State<CadastroPage> {
   final telefoneController = TextEditingController();
   final senhaController = TextEditingController();
   final confirmarSenhaController = TextEditingController();
+  String tipoConta = 'cliente';
 
-  String tipoConta = '';
-
-  // Função para validar os campos
   void validarECadastrar() {
-    String nome = nomeController.text.trim();
-    String email = emailController.text.trim();
-    String telefone = telefoneController.text.trim();
+    String nome = nomeController.text;
+    String email = emailController.text;
     String senha = senhaController.text;
     String confirmarSenha = confirmarSenhaController.text;
 
-    // Verificar campos vazios
-    if (nome.isEmpty ||
-        email.isEmpty ||
-        telefone.isEmpty ||
-        senha.isEmpty ||
-        confirmarSenha.isEmpty) {
-      exibirMensagem('Por favor, preencha todos os campos!');
+    if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
+      mostrarErro('Preencha todos os campos!');
       return;
     }
 
-    // Verificar tipo de conta
-    if (tipoConta.isEmpty) {
-      exibirMensagem('Selecione se você é Cliente ou Empresa!');
-      return;
-    }
-
-    // Verificar senha
     if (senha != confirmarSenha) {
-      exibirMensagem('As senhas não coincidem!');
+      mostrarErro('As senhas não coincidem!');
       return;
     }
 
-    // Verificar tamanho mínimo
-    if (senha.length < 6) {
-      exibirMensagem('A senha deve ter pelo menos 6 caracteres!');
-      return;
-    }
-
-    // Navegação
-    if (tipoConta == 'cliente') {
+    // LÓGICA DE NAVEGAÇÃO
+    if (tipoConta == 'empresa') {
+      // Se for empresa, vai para a página de Cadastro da Empresa
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeClientePage(nome: nome, telefone: telefone),
+          builder: (context) => CadastroEmpresaPage(nomeResponsavel: nome),
         ),
       );
     } else {
-      // Corrigido para passar o parâmetro nomeEmpresa exigido pela HomeEmpresaPage
+      // Se for cliente, vai direto para a Home do Cliente
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeEmpresaPage(nomeEmpresa: nome),
+          builder: (context) => HomeClientePage(nome: nome, telefone: ''),
         ),
       );
     }
   }
 
-  // Exibir mensagens
-  void exibirMensagem(String mensagem) {
+  void mostrarErro(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: Colors.redAccent,
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(mensagem), backgroundColor: Colors.redAccent),
     );
   }
 
@@ -90,236 +65,136 @@ class _CadastroPageState extends State<CadastroPage> {
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Cabeçalho
+              Container(
+                width: double.infinity,
+                height: 120,
+                alignment: Alignment.center,
+                child: const Text(
+                  'Cadastro',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+              ),
+              // Formulário
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F1F1),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
+                ),
+                padding: const EdgeInsets.all(25),
                 child: Column(
                   children: [
-                    // Cabeçalho com botão de voltar
+                    campo('Nome completo:', 'seu nome', nomeController),
+                    const SizedBox(height: 20),
+                    campo('Email:', 'seuemail@gmail.com', emailController),
+                    const SizedBox(height: 20),
+                    campoTelefone(),
+                    const SizedBox(height: 20),
+                    campo('Senha:', '********', senhaController, obscure: true),
+                    const SizedBox(height: 20),
+                    campo(
+                      'Confirmar senha:',
+                      '********',
+                      confirmarSenhaController,
+                      obscure: true,
+                    ),
+                    const SizedBox(height: 25),
+
+                    // TIPO DE CONTA
                     Container(
-                      width: double.infinity,
-                      height: 120,
-                      color: const Color(0xFF111934),
-                      child: Stack(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Botão de Voltar
-                          Positioned(
-                            top: 20,
-                            left: 10,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
+                          const Text('Tipo de conta:'),
+                          RadioListTile<String>(
+                            title: const Text('Cliente'),
+                            value: 'cliente',
+                            groupValue: tipoConta,
+                            onChanged: (v) => setState(() => tipoConta = v!),
                           ),
-                          // Título centralizado
-                          const Center(
-                            child: Text(
-                              'Cadastro',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 30,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                          RadioListTile<String>(
+                            title: const Text('Empresa/Profissional'),
+                            value: 'empresa',
+                            groupValue: tipoConta,
+                            onChanged: (v) => setState(() => tipoConta = v!),
                           ),
                         ],
                       ),
                     ),
-                    Container(
-                      width: double.infinity,
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight - 120,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF1F1F1),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(60),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 22,
-                          vertical: 30,
-                        ),
-                        child: Column(
-                          children: [
-                            campo(
-                              titulo: 'Nome completo:',
-                              hint: 'seu nome completo',
-                              controller: nomeController,
-                            ),
-                            const SizedBox(height: 22),
-                            campo(
-                              titulo: 'Email:',
-                              hint: 'seuemail@gmail.com',
-                              controller: emailController,
-                            ),
-                            const SizedBox(height: 22),
-                            campoTelefone(),
-                            const SizedBox(height: 22),
-                            campo(
-                              titulo: 'Senha:',
-                              hint: '**************',
-                              controller: senhaController,
-                              obscure: true,
-                            ),
-                            const SizedBox(height: 22),
-                            campo(
-                              titulo: 'Confirmar senha:',
-                              hint: '**************',
-                              controller: confirmarSenhaController,
-                              obscure: true,
-                            ),
-                            const SizedBox(height: 22),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Tipo de conta:',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Radio<String>(
-                                        value: 'cliente',
-                                        groupValue: tipoConta,
-                                        activeColor: const Color(0xFF111934),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            tipoConta = value!;
-                                          });
-                                        },
-                                      ),
-                                      const Text(
-                                        'Cliente',
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Radio<String>(
-                                        value: 'empresa',
-                                        groupValue: tipoConta,
-                                        activeColor: const Color(0xFF111934),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            tipoConta = value!;
-                                          });
-                                        },
-                                      ),
-                                      const Text(
-                                        'Empresa/ profissional',
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 45),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: validarECadastrar,
-                                child: const Text(
-                                  'CONTINUAR ➜',
-                                  style: TextStyle(
-                                    color: Color(0xFF111934),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                          ],
+                    const SizedBox(height: 40),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: validarECadastrar,
+                        child: const Text(
+                          'CONTINUAR ➜',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111934),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget campo({
-    required String titulo,
-    required String hint,
-    required TextEditingController controller,
+  Widget campo(
+    String titulo,
+    String hint,
+    TextEditingController controller, {
     bool obscure = false,
   }) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(titulo, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 5),
-          TextField(
-            controller: controller,
-            obscureText: obscure,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: Colors.grey),
-              border: InputBorder.none,
-              isCollapsed: true,
-            ),
-          ),
-        ],
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          labelText: titulo,
+          hintText: hint,
+          border: InputBorder.none,
+        ),
       ),
     );
   }
 
   Widget campoTelefone() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Telefone:', style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 5),
-          TextField(
-            controller: telefoneController,
-            keyboardType: TextInputType.phone,
-            inputFormatters: [TelefoneInputFormatter()],
-            decoration: const InputDecoration(
-              hintText: '(49)99999-9999',
-              border: InputBorder.none,
-              isCollapsed: true,
-            ),
-          ),
-        ],
+      child: TextField(
+        controller: telefoneController,
+        keyboardType: TextInputType.phone,
+        inputFormatters: [TelefoneInputFormatter()],
+        decoration: const InputDecoration(
+          labelText: 'Telefone:',
+          hintText: '(49) 99999-9999',
+          border: InputBorder.none,
+        ),
       ),
     );
   }
@@ -328,40 +203,21 @@ class _CadastroPageState extends State<CadastroPage> {
 class TelefoneInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
+    TextEditingValue old,
+    TextEditingValue newVal,
   ) {
-    String numeros = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-
-    if (numeros.length > 11) {
-      numeros = numeros.substring(0, 11);
+    String t = newVal.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (t.length > 11) t = t.substring(0, 11);
+    String f = '';
+    if (t.isNotEmpty) {
+      f += '(' + t.substring(0, t.length >= 2 ? 2 : t.length);
+      if (t.length >= 2) f += ') ';
     }
-
-    String textoFormatado = '';
-
-    if (numeros.isNotEmpty) {
-      textoFormatado += '(';
-      textoFormatado += numeros.substring(
-        0,
-        numeros.length >= 2 ? 2 : numeros.length,
-      );
-      if (numeros.length >= 2) textoFormatado += ')';
-    }
-
-    if (numeros.length > 2) {
-      textoFormatado += numeros.substring(
-        2,
-        numeros.length >= 7 ? 7 : numeros.length,
-      );
-    }
-
-    if (numeros.length > 7) {
-      textoFormatado += '-${numeros.substring(7)}';
-    }
-
+    if (t.length > 2) f += t.substring(2, t.length >= 7 ? 7 : t.length);
+    if (t.length > 7) f += '-' + t.substring(7);
     return TextEditingValue(
-      text: textoFormatado,
-      selection: TextSelection.collapsed(offset: textoFormatado.length),
+      text: f,
+      selection: TextSelection.collapsed(offset: f.length),
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'agendar.dart';
+import 'agenda_empresa.dart';
 import 'dados_globais.dart';
-// import 'cadastro.dart'; // Removido pois não está sendo utilizado nesta página
+import 'lista_clientes.dart';
 
 class HomeEmpresaPage extends StatelessWidget {
   final String nomeEmpresa;
@@ -10,9 +10,6 @@ class HomeEmpresaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Busca os agendamentos para a data de hoje (ou uma data específica)
-    // Sugestão: usar uma data dinâmica se o DadosGlobais suportar,
-    // mas mantive a lógica do seu código original com uma pequena melhoria.
     final String dataHoje = '2026-05-28';
     final List<Map<String, String>> agendamentos =
         DadosGlobais.getAgendamentosPorData(dataHoje);
@@ -38,9 +35,7 @@ class HomeEmpresaPage extends StatelessWidget {
                         color: Colors.white,
                         size: 30,
                       ),
-                      onPressed: () {
-                        // Espaço para abrir um Drawer ou Menu
-                      },
+                      onPressed: () {},
                     ),
                   ),
                   Center(
@@ -119,7 +114,7 @@ class HomeEmpresaPage extends StatelessWidget {
                               ),
                             ),
                             const Text(
-                              '→ 2 horários livres', // Valor estático conforme original
+                              '→ 2 horários livres',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -197,18 +192,27 @@ class HomeEmpresaPage extends StatelessWidget {
                               ),
                       ),
                       const SizedBox(height: 40),
+
                       botaoAcao('Ver agenda', () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                AgendarPage(nomeEmpresa: nomeEmpresa),
+                                AgendaPage(nomeEmpresa: nomeEmpresa),
                           ),
                         );
                       }),
+
                       const SizedBox(height: 15),
+
+                      // BOTÃO VER CLIENTES - Agora vai para a Lista de Clientes
                       botaoAcao('Ver clientes', () {
-                        // Lógica para ver clientes
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ListaClientesPage(),
+                          ),
+                        );
                       }),
                     ],
                   ),

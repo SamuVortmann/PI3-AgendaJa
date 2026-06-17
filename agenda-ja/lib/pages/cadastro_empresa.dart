@@ -1,254 +1,178 @@
 import 'package:flutter/material.dart';
-import 'dados_globais.dart';
+import 'home_empresa.dart';
 
-class AgendaPage extends StatefulWidget {
-  final String nomeEmpresa;
+class CadastroEmpresaPage extends StatefulWidget {
+  final String nomeResponsavel;
 
-  const AgendaPage({super.key, required this.nomeEmpresa});
+  const CadastroEmpresaPage({super.key, required this.nomeResponsavel});
 
   @override
-  State<AgendaPage> createState() => _AgendaPageState();
+  State<CadastroEmpresaPage> createState() => _CadastroEmpresaPageState();
 }
 
-class _AgendaPageState extends State<AgendaPage> {
-  DateTime dataSelecionada = DateTime(2026, 5, 28);
-  DateTime mesAtual = DateTime(2026, 5);
+class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
+  final tipoServicoController = TextEditingController();
+  final enderecoController = TextEditingController();
 
-  void proximoMes() {
-    if (mesAtual.year < 2027 || mesAtual.month < 12) {
-      setState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month + 1));
-    }
-  }
+  // Dias selecionados
+  Map<String, bool> diasFuncionamento = {
+    'Segunda - Feira': true,
+    'Terça - Feira': false,
+    'Quarta - Feira': true,
+    'Quinta - Feira': false,
+    'Sexta - Feira': false,
+    'Sabado': false,
+    'Domingo': false,
+  };
 
-  void mesAnterior() {
-    if (mesAtual.year > 2026 || mesAtual.month > 5) {
-      setState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month - 1));
-    }
-  }
+  // Configurações de Turnos
+  bool turnoNoiteAtivo = false;
+  int duracaoAtendimentoMinutos = 60; // Padrão 1 hora
 
-  String getNomeMes(int mes) {
-    const meses = [
-      'janeiro',
-      'fevereiro',
-      'março',
-      'abril',
-      'maio',
-      'junho',
-      'julho',
-      'agosto',
-      'setembro',
-      'outubro',
-      'novembro',
-      'dezembro',
-    ];
-    return meses[mes - 1];
+  void finalizar() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomeEmpresaPage(nomeEmpresa: 'Sua Empresa'),
+      ),
+      (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    String keyData =
-        "${dataSelecionada.year}-${dataSelecionada.month.toString().padLeft(2, '0')}-${dataSelecionada.day.toString().padLeft(2, '0')}";
-    List<Map<String, String>> agendamentosDoDia =
-        DadosGlobais.getAgendamentosPorData(keyData);
-
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
       body: SafeArea(
         child: Column(
           children: [
             Container(
-              width: double.infinity,
               height: 80,
-              color: const Color(0xFF111934),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 15,
-                    left: 10,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.menu,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text(
-                          'A',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        Text(
-                          'Agenda Já',
-                          style: TextStyle(color: Colors.white, fontSize: 10),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              alignment: Alignment.center,
+              child: const Text(
+                'Empresa',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
                   color: Color(0xFFF3F3F3),
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(25),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Olá, ${widget.nomeEmpresa} !',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      _campoSimples(
+                        'Tipo de serviço',
+                        'seu tipo de serviço',
+                        tipoServicoController,
+                      ),
+                      const SizedBox(height: 15),
+                      _campoSimples(
+                        'Endereço:',
+                        'endereço do seu comercio',
+                        enderecoController,
                       ),
                       const SizedBox(height: 25),
+
+                      // CONTAINER DE DIAS E HORÁRIOS
                       Container(
-                        padding: const EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Sua agenda  ',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_back, size: 16),
-                                  onPressed: mesAnterior,
-                                  color: Colors.white,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: const Color(0xFF111934),
-                                    shape: const RoundedRectangleBorder(),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15,
-                                    vertical: 4,
-                                  ),
-                                  color: const Color(0xFF111934),
-                                  child: Text(
-                                    getNomeMes(mesAtual.month),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_forward,
-                                    size: 16,
-                                  ),
-                                  onPressed: proximoMes,
-                                  color: Colors.white,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: const Color(0xFF111934),
-                                    shape: const RoundedRectangleBorder(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: const [
-                                Text('D'),
-                                Text('S'),
-                                Text('T'),
-                                Text('Q'),
-                                Text('Q'),
-                                Text('S'),
-                                Text('S'),
-                              ],
-                            ),
-                            const Divider(),
-                            buildDiasCalendario(),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF111934),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Agendamentos do dia',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: const [
+                                Text(
+                                  'Dia de funcionamento',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Horários',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            const Divider(),
+                            ...diasFuncionamento.keys
+                                .map((dia) => _buildDiaItem(dia))
+                                .toList(),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // CONFIGURAÇÃO DE TURNOS E DURAÇÃO
+                      const Text(
+                        'Configurações de Atendimento:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              title: const Text('Ativar turno da noite?'),
+                              value: turnoNoiteAtivo,
+                              activeColor: const Color(0xFF111934),
+                              onChanged: (v) =>
+                                  setState(() => turnoNoiteAtivo = v),
+                            ),
+                            const Divider(),
+                            ListTile(
+                              title: const Text('Duração por atendimento:'),
+                              trailing: DropdownButton<int>(
+                                value: duracaoAtendimentoMinutos,
+                                items: [30, 60, 90, 120].map((int value) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text('$value min'),
+                                  );
+                                }).toList(),
+                                onChanged: (v) => setState(
+                                  () => duracaoAtendimentoMinutos = v!,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 15),
-                            if (agendamentosDoDia.isEmpty)
-                              const Center(
-                                child: Text(
-                                  'Nenhum agendamento',
-                                  style: TextStyle(color: Colors.white54),
-                                ),
-                              )
-                            else
-                              ...agendamentosDoDia
-                                  .map(
-                                    (ag) => Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 12,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            '${ag['horario']} - ${ag['nome']}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () => mostrarDetalhes(ag),
-                                            child: const Text(
-                                              'Detalhes',
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontStyle: FontStyle.italic,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
                           ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: finalizar,
+                          child: const Text(
+                            'CONTINUAR ➜',
+                            style: TextStyle(
+                              color: Color(0xFF111934),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -262,158 +186,108 @@ class _AgendaPageState extends State<AgendaPage> {
     );
   }
 
-  Widget buildDiasCalendario() {
-    int diasNoMes = DateTime(mesAtual.year, mesAtual.month + 1, 0).day;
-    int primeiroDiaSemana =
-        DateTime(mesAtual.year, mesAtual.month, 1).weekday % 7;
-    List<Widget> dias = [];
-    for (int i = 0; i < primeiroDiaSemana; i++)
-      dias.add(const SizedBox(width: 35, height: 35));
-    for (int i = 1; i <= diasNoMes; i++) {
-      String diaKey =
-          "${mesAtual.year}-${mesAtual.month.toString().padLeft(2, '0')}-${i.toString().padLeft(2, '0')}";
-      bool temAgendamento = DadosGlobais.agendamentos.containsKey(diaKey);
-      bool selecionado =
-          dataSelecionada.day == i &&
-          dataSelecionada.month == mesAtual.month &&
-          dataSelecionada.year == mesAtual.year;
-      dias.add(
-        GestureDetector(
-          onTap: () => setState(
-            () => dataSelecionada = DateTime(mesAtual.year, mesAtual.month, i),
-          ),
-          child: Container(
-            width: 35,
-            height: 35,
-            alignment: Alignment.center,
-            decoration: selecionado
-                ? const BoxDecoration(
-                    color: Color(0xFF111934),
-                    shape: BoxShape.circle,
-                  )
-                : (temAgendamento
-                      ? BoxDecoration(
-                          border: Border.all(color: const Color(0xFF111934)),
-                          shape: BoxShape.circle,
-                        )
-                      : null),
-            child: Text(
-              i.toString().padLeft(2, '0'),
-              style: TextStyle(
-                color: selecionado ? Colors.white : Colors.black,
-                fontWeight: (selecionado || temAgendamento)
-                    ? FontWeight.bold
-                    : FontWeight.normal,
+  Widget _buildDiaItem(String dia) {
+    bool selecionado = diasFuncionamento[dia]!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () =>
+                    setState(() => diasFuncionamento[dia] = !selecionado),
+                child: Icon(
+                  selecionado ? Icons.circle : Icons.circle_outlined,
+                  color: const Color(0xFF111934),
+                  size: 24,
+                ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Expanded(child: Text(dia, style: const TextStyle(fontSize: 15))),
+              if (selecionado) ...[
+                _tagHorario('08:30'),
+                const Text(' às '),
+                _tagHorario('18:00'),
+              ],
+            ],
           ),
-        ),
-      );
-    }
-    return Wrap(spacing: 5, runSpacing: 5, children: dias);
-  }
-
-  void mostrarDetalhes(Map<String, String> ag) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: 500,
-        padding: const EdgeInsets.all(30),
-        decoration: const BoxDecoration(
-          color: Color(0xFFF3F3F3),
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Detalhes agendamento',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                color: const Color(0xFF111934),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          if (selecionado)
+            Padding(
+              padding: const EdgeInsets.only(left: 35, top: 5),
+              child: Row(
                 children: [
-                  Center(
-                    child: Text(
-                      ag['nome']!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  const Text(
+                    'Turnos: ',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Data: ${dataSelecionada.day}/${dataSelecionada.month}/${dataSelecionada.year}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Horário: ${ag['horario']}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Telefone: ${ag['telefone']}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'Pendente',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  botaoModal(
-                    'Confirmar',
-                    Colors.green,
-                    () => Navigator.pop(context),
-                  ),
-                  const SizedBox(height: 10),
-                  botaoModal(
-                    'Cancelar',
-                    Colors.red,
-                    () => Navigator.pop(context),
-                  ),
-                  const SizedBox(height: 10),
-                  botaoModal(
-                    'Atendimento concluído',
-                    Colors.grey,
-                    () => Navigator.pop(context),
-                  ),
+                  _tagTurno('Manhã'),
+                  const SizedBox(width: 5),
+                  _tagTurno('Tarde'),
+                  if (turnoNoiteAtivo) ...[
+                    const SizedBox(width: 5),
+                    _tagTurno('Noite'),
+                  ],
                 ],
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget botaoModal(String texto, Color cor, VoidCallback onTap) {
-    return SizedBox(
-      width: double.infinity,
-      height: 45,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: cor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+  Widget _tagHorario(String hora) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(hora, style: const TextStyle(fontSize: 12)),
+    );
+  }
+
+  Widget _tagTurno(String nome) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111934).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        nome,
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _campoSimples(
+    String titulo,
+    String hint,
+    TextEditingController controller,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
-        ),
-        child: Text(texto, style: const TextStyle(color: Colors.white)),
+          TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              border: InputBorder.none,
+            ),
+          ),
+        ],
       ),
     );
   }
