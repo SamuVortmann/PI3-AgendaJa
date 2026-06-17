@@ -1,4 +1,8 @@
 class DadosGlobais {
+  // Nome do usuário centralizado (Opcional, mas útil para o perfil)
+  static String nomeUsuario = 'Ana Beatriz da Silva';
+  static String telefoneUsuario = '(11) 98888-7777';
+
   // 1. Lista de empresas cadastradas (Para a tela de Agendar)
   static List<Map<String, String>> empresasCadastradas = [];
 
@@ -48,14 +52,14 @@ class DadosGlobais {
       'data': '28/05/2026',
       'local': 'Clinica vida - Concórdia',
       'horario': '15:30',
-      'status': 'Passado'
+      'status': 'Futuro' // Alterado para Futuro para aparecer no calendário de teste
     },
     {
       'id': '4',
       'data': '28/05/2026',
       'local': 'Salão Bela Vista - Irani',
       'horario': '18:00',
-      'status': 'Cancelado'
+      'status': 'Futuro' // Alterado para Futuro para aparecer no calendário de teste
     },
   ];
 
@@ -82,6 +86,16 @@ class DadosGlobais {
     int index = meusAgendamentosCliente.indexWhere((ag) => ag['id'] == id);
     if (index != -1) {
       meusAgendamentosCliente[index]['status'] = 'Cancelado';
+    }
+  }
+
+  // Função para remarcar um agendamento (Caso necessário em outras telas)
+  static void remarcarAgendamento(String id, String novaData, String novoHorario) {
+    int index = meusAgendamentosCliente.indexWhere((ag) => ag['id'] == id);
+    if (index != -1) {
+      meusAgendamentosCliente[index]['data'] = novaData;
+      meusAgendamentosCliente[index]['horario'] = novoHorario;
+      meusAgendamentosCliente[index]['status'] = 'Futuro';
     }
   }
 }

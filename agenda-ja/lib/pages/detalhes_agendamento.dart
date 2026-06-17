@@ -11,13 +11,28 @@ class DetalhesAgendamentoPage extends StatefulWidget {
 }
 
 class _DetalhesAgendamentoPageState extends State<DetalhesAgendamentoPage> {
-  // Dados locais (Simulando carregamento do banco pelo ID)
-  String local = 'Clinica Tesser - Concórdia';
-  String dataExibicao = '10/06/2026';
-  String horarioExibicao = '16:50';
+  // Dados locais
+  late String local;
+  late String dataExibicao;
+  late String horarioExibicao;
   String endereco = 'Rua Prefeito Domingos Machado de Lima, 755 - Centro, Concórdia - SC, 89700-075';
-  String status = 'Confirmado';
-  Color statusColor = Colors.green;
+  late String status;
+  late Color statusColor;
+
+  @override
+  void initState() {
+    super.initState();
+    // Busca os dados atuais na prancheta ao abrir a tela
+    final ag = DadosGlobais.meusAgendamentosCliente.firstWhere(
+      (element) => element['id'] == widget.agendamentoId,
+      orElse: () => DadosGlobais.meusAgendamentosCliente[0],
+    );
+    local = ag['local'];
+    dataExibicao = ag['data'];
+    horarioExibicao = ag['horario'];
+    status = ag['status'];
+    statusColor = status == 'Cancelado' ? Colors.red : (status == 'Remarcado' ? Colors.blue : Colors.green);
+  }
 
   // Variáveis para o Calendário de Remarcação
   DateTime mesAtual = DateTime(2026, 6);
@@ -33,7 +48,7 @@ class _DetalhesAgendamentoPageState extends State<DetalhesAgendamentoPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) => Container(
-          height: MediaQuery.of(context).size.height * 0.85,
+          height: MediaQuery.of(context).size.height * 0.9,
           decoration: const BoxDecoration(
             color: Color(0xFFF3F3F3),
             borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
@@ -44,92 +59,116 @@ class _DetalhesAgendamentoPageState extends State<DetalhesAgendamentoPage> {
               Container(width: 50, height: 5, decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(10))),
               const SizedBox(height: 20),
               const Text('Selecione a nova data e horário', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               
-              // CALENDÁRIO
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade300)),
+              // CONTEÚDO COM SCROLL PARA EVITAR OVERFLOW
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(onPressed: () => setModalState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month - 1)), icon: const Icon(Icons.arrow_back_ios, size: 16)),
-                          Text('${mesAtual.month}/2026', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          IconButton(onPressed: () => setModalState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month + 1)), icon: const Icon(Icons.arrow_forward_ios, size: 16)),
-                        ],
+                      // CALENDÁRIO
+                      Container(
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade300)),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(onPressed: () => setModalState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month - 1)), icon: const Icon(Icons.arrow_back_ios, size: 16)),
+                                Text('${mesAtual.month}/${mesAtual.year}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                IconButton(onPressed: () => setModalState(() => mesAtual = DateTime(mesAtual.year, mesAtual.month + 1)), icon: const Icon(Icons.arrow_forward_ios, size: 16)),
+                              ],
+                            ),
+                            const Divider(),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
+                              itemCount: 30,
+                              itemBuilder: (context, index) {
+                                int dia = index + 1;
+                                bool isSel = dataSelecionada?.day == dia && dataSelecionada?.month == mesAtual.month;
+                                return GestureDetector(
+                                  onTap: () => setModalState(() => dataSelecionada = DateTime(mesAtual.year, mesAtual.month, dia)),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(color: isSel ? const Color(0xFF111934) : Colors.transparent, shape: BoxShape.circle),
+                                    child: Text('$dia', style: TextStyle(color: isSel ? Colors.white : Colors.black)),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      const Divider(),
-                      // Dias da semana e Grid do calendário (Simplificado para o exemplo)
+                      
+                      const SizedBox(height: 20),
+                      const Text('Horários disponíveis:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 15),
+                      
+                      // HORÁRIOS EM GRID
                       GridView.builder(
                         shrinkWrap: true,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
-                        itemCount: 30,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 2.2,
+                        ),
+                        itemCount: horariosDisponiveis.length,
                         itemBuilder: (context, index) {
-                          int dia = index + 1;
-                          bool isSel = dataSelecionada?.day == dia && dataSelecionada?.month == mesAtual.month;
+                          String h = horariosDisponiveis[index];
+                          bool isSel = horarioSelecionado == h;
                           return GestureDetector(
-                            onTap: () => setModalState(() => dataSelecionada = DateTime(mesAtual.year, mesAtual.month, dia)),
+                            onTap: () => setModalState(() => horarioSelecionado = h),
                             child: Container(
                               alignment: Alignment.center,
-                              decoration: BoxDecoration(color: isSel ? const Color(0xFF111934) : Colors.transparent, shape: BoxShape.circle),
-                              child: Text('$dia', style: TextStyle(color: isSel ? Colors.white : Colors.black)),
+                              decoration: BoxDecoration(
+                                color: isSel ? const Color(0xFF111934) : Colors.white, 
+                                borderRadius: BorderRadius.circular(15), 
+                                border: Border.all(color: Colors.grey.shade300)
+                              ),
+                              child: Text(h, style: TextStyle(color: isSel ? Colors.white : Colors.black, fontSize: 13)),
                             ),
                           );
                         },
                       ),
+                      
+                      const SizedBox(height: 30),
+                      
+                      // BOTÃO SALVAR
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: (dataSelecionada != null && horarioSelecionado != null) ? () {
+                            String novaData = '${dataSelecionada!.day.toString().padLeft(2, '0')}/${dataSelecionada!.month.toString().padLeft(2, '0')}/${dataSelecionada!.year}';
+                            String novoHorario = horarioSelecionado!;
+
+                            // SALVAMENTO REAL NOS DADOS GLOBAIS
+                            if (widget.agendamentoId != null) {
+                              DadosGlobais.remarcarAgendamento(widget.agendamentoId!, novaData, novoHorario);
+                            }
+
+                            setState(() {
+                              dataExibicao = novaData;
+                              horarioExibicao = novoHorario;
+                              status = 'Remarcado';
+                              statusColor = Colors.blue;
+                            });
+                            
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Agendamento remarcado com sucesso!')));
+                          } : null,
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF111934), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                          child: const Text('SALVAR ALTERAÇÕES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
                     ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 20),
-              const Text('Horários disponíveis:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              
-              // HORÁRIOS
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: horariosDisponiveis.map((h) {
-                  bool isSel = horarioSelecionado == h;
-                  return GestureDetector(
-                    onTap: () => setModalState(() => horarioSelecionado = h),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      decoration: BoxDecoration(color: isSel ? const Color(0xFF111934) : Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade300)),
-                      child: Text(h, style: TextStyle(color: isSel ? Colors.white : Colors.black)),
-                    ),
-                  );
-                }).toList(),
-              ),
-              
-              const Spacer(),
-              
-              // BOTÃO SALVAR
-              Padding(
-                padding: const EdgeInsets.all(30),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: (dataSelecionada != null && horarioSelecionado != null) ? () {
-                      setState(() {
-                        dataExibicao = '${dataSelecionada!.day}/${dataSelecionada!.month}/${dataSelecionada!.year}';
-                        horarioExibicao = horarioSelecionado!;
-                        status = 'Remarcado';
-                        statusColor = Colors.blue;
-                      });
-                      
-                      // Atualiza nos DadosGlobais (Opcional: implementar lógica de persistência aqui)
-                      
-                      Navigator.pop(context);
-                    } : null,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF111934), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                    child: const Text('SALVAR ALTERAÇÕES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
