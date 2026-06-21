@@ -30,7 +30,6 @@ class MeuApp extends StatelessWidget {
         useMaterial3: true,
       ),
       routes: {
-        '/': (context) => const PaginaInicial(),
         '/login': (context) => const LoginPg(),
         '/cadastro': (context) => const CadastroPage(),
         '/home_cliente': (context) => const HomeClientePage(),
