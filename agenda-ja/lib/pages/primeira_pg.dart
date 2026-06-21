@@ -1,10 +1,45 @@
 import 'package:flutter/material.dart';
+
 import 'cssprimeira_pg.dart';
 import 'login_pg.dart';
 import 'cadastro.dart';
+import '../services/auth_session.dart';
+import 'home_empresa.dart';
+import 'homecliente.dart';
 
-class PaginaInicial extends StatelessWidget {
+class PaginaInicial extends StatefulWidget {
   const PaginaInicial({super.key});
+
+  @override
+  State<PaginaInicial> createState() => _PaginaInicialState();
+}
+
+class _PaginaInicialState extends State<PaginaInicial> {
+  @override
+  void initState() {
+    super.initState();
+    _verificarSessao();
+  }
+
+  Future<void> _verificarSessao() async {
+    final session = AuthSession.instance;
+    if (!session.isLoggedIn) return;
+
+    await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
+
+    if (session.usuario!.isAdmin) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeEmpresaPage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeClientePage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,4 +126,3 @@ class PaginaInicial extends StatelessWidget {
     );
   }
 }
-

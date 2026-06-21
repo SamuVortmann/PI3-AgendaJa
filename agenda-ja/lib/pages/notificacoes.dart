@@ -1,112 +1,115 @@
 import 'package:flutter/material.dart';
 
-class NotificacoesPage extends StatelessWidget {
+import '../models/agendamento.dart';
+import '../services/agendamento_service.dart';
+import '../utils/date_utils.dart';
+
+class NotificacoesPage extends StatefulWidget {
   const NotificacoesPage({super.key});
+
+  @override
+  State<NotificacoesPage> createState() => _NotificacoesPageState();
+}
+
+class _NotificacoesPageState extends State<NotificacoesPage> {
+  List<Agendamento> _agendamentos = [];
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    setState(() => _carregando = true);
+    try {
+      final ags = await AgendamentoService.instance.meusAgendamentos();
+      if (mounted) setState(() => _agendamentos = ags);
+    } catch (_) {
+      if (mounted) setState(() => _agendamentos = []);
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  List<Map<String, String>> get notificacoes {
+    final lista = <Map<String, String>>[];
+    final agora = DateTime.now();
+
+    for (final ag in _agendamentos) {
+      if (ag.isCancelado) continue;
+
+      if (ag.status == 'confirmado') {
+        lista.add({
+          'icon': '✔',
+          'text': 'Seu horário foi confirmado\n${formatarData(ag.dataHoraInicio)} • ${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome}',
+        });
+      }
+
+      final diff = ag.dataHoraInicio.difference(agora);
+      if (diff.inHours >= 20 && diff.inHours <= 28 && ag.isFuturo) {
+        lista.add({
+          'icon': '⏰',
+          'text': 'Você tem um horário amanhã\n${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome}',
+        });
+      }
+
+      if (ag.status == 'pendente' && ag.isFuturo) {
+        lista.add({
+          'icon': '📋',
+          'text': 'Agendamento pendente de confirmação\n${formatarData(ag.dataHoraInicio)} • ${ag.servicoNome}',
+        });
+      }
+    }
+
+    return lista;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF111934), // Azul escuro do cabeçalho
+      backgroundColor: const Color(0xFF111934),
       body: SafeArea(
         child: Column(
           children: [
-            // CABEÇALHO
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 20),
               color: const Color(0xFF111934),
               child: Column(
                 children: [
-                  // LOGO
-                  Column(
-                    children: const [
-                      Text(
-                        'A',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                      Text(
-                        'Agenda Já',
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  // TÍTULO
-                  const Text(
-                    'Notificações',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  Image.asset('assets/logo.png', width: 60, errorBuilder: (_, __, ___) => const Text('A', style: TextStyle(color: Colors.white, fontSize: 28))),
+                  const SizedBox(height: 20),
+                  const Text('Notificações', style: TextStyle(color: Colors.white, fontSize: 32)),
                 ],
               ),
             ),
-            
-            // CORPO DA PÁGINA
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF3F3F3), // Cinza claro do fundo
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                  ),
+                  color: Color(0xFFF3F3F3),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      
-                      // CARD 1
-                      _buildNotificationCard(
-                        icon: '✔',
-                        text: 'Seu horário foi confirmado\nHoje • 14:30 • Prado Concept',
+                child: _carregando
+                    ? const Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                        onRefresh: _carregar,
+                        child: notificacoes.isEmpty
+                            ? const ListTile(title: Text('Nenhuma notificação no momento'))
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(30),
+                                itemCount: notificacoes.length,
+                                itemBuilder: (_, i) {
+                                  final n = notificacoes[i];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: _buildNotificationCard(icon: n['icon']!, text: n['text']!),
+                                  );
+                                },
+                              ),
                       ),
-                      
-                      const SizedBox(height: 20),
-                      
-                      // CARD 2
-                      _buildNotificationCard(
-                        icon: '⏰',
-                        text: 'Você tem um horário amanhã\n09:00 • Clínica Vida',
-                      ),
-                      
-                      const SizedBox(height: 20),
-                      
-                      // CARD VAZIO (Como na imagem)
-                      _buildNotificationCard(
-                        icon: '',
-                        text: '',
-                      ),
-                      
-                      const Spacer(),
-                      
-                      // BOTÃO VOLTAR
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: TextButton.icon(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back, size: 18, color: Colors.black87),
-                          label: const Text(
-                            'Voltar',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
           ],
@@ -119,34 +122,12 @@ class NotificacoesPage extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icon.isNotEmpty) ...[
-            Text(
-              icon,
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(width: 10),
-          ],
-          if (text.isNotEmpty)
-            Expanded(
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  height: 1.3,
-                ),
-              ),
-            ),
-          if (text.isEmpty)
-            const SizedBox(height: 20), // Altura mínima para card vazio
+          Text(icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 14, height: 1.3))),
         ],
       ),
     );
