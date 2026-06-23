@@ -21,7 +21,7 @@ class Servico {
       nome: json['nome'] as String,
       descricao: json['descricao'] as String?,
       duracaoMinutos: json['duracao_minutos'] as int,
-      preco: (json['preco'] as num).toDouble(),
+      preco: double.parse(json['preco'].toString()),
       ativo: json['ativo'] as bool? ?? true,
     );
   }
