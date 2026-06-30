@@ -1,3 +1,5 @@
+import '../utils/json_utils.dart';
+
 class Usuario {
   final int id;
   final String nome;
@@ -17,11 +19,11 @@ class Usuario {
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
-      id: json['id'] as int,
-      nome: json['nome'] as String,
-      email: json['email'] as String,
-      telefone: json['telefone'] as String?,
-      perfil: json['perfil'] as String,
+      id: parseJsonInt(json['id']),
+      nome: json['nome'].toString(),
+      email: json['email'].toString(),
+      telefone: parseJsonString(json['telefone']),
+      perfil: json['perfil'].toString(),
     );
   }
 

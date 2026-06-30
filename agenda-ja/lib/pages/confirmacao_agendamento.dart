@@ -6,6 +6,7 @@ import '../models/servico.dart';
 import '../services/agendamento_service.dart';
 import '../services/api_client.dart';
 import '../utils/date_utils.dart';
+import 'homecliente.dart';
 
 class ConfirmacaoAgendamentoPage extends StatefulWidget {
   final Servico? servico;
@@ -139,12 +140,18 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
                           width: double.infinity,
                           height: 55,
                           child: ElevatedButton(
-                            onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (_) => const HomeClientePage()),
+                                (route) => route.isFirst,
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF111934),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text('Voltar ao início', style: TextStyle(color: Colors.white)),
+                            child: const Text('Ver minha agenda', style: TextStyle(color: Colors.white)),
                           ),
                         ),
                         const SizedBox(height: 12),

@@ -4,26 +4,40 @@ const profissionalModel = require('../models/profissionalModel');
 const disponibilidadeModel = require('../models/disponibilidadeModel');
 const whatsappService = require('../services/whatsappService');
 
+function formatLocalDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function parsePeriodo(query) {
   const { data_inicio: dataInicio, data_fim: dataFim, visao } = query;
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
 
   if (dataInicio && dataFim) {
     return { dataInicio, dataFim };
   }
 
-  if (visao === 'semana') {
-    const inicio = new Date(hoje);
-    const fim = new Date(hoje);
-    fim.setDate(fim.getDate() + 6);
-    fim.setHours(23, 59, 59, 999);
-    return { dataInicio: inicio.toISOString(), dataFim: fim.toISOString() };
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  if (visao === 'todos') {
+    return { dataInicio: null, dataFim: null };
   }
 
-  const fimDia = new Date(hoje);
-  fimDia.setHours(23, 59, 59, 999);
-  return { dataInicio: hoje.toISOString(), dataFim: fimDia.toISOString() };
+  if (visao === 'semana') {
+    const fim = new Date(hoje);
+    fim.setDate(fim.getDate() + 6);
+    return {
+      dataInicio: formatLocalDate(hoje),
+      dataFim: formatLocalDate(fim),
+    };
+  }
+
+  return {
+    dataInicio: formatLocalDate(hoje),
+    dataFim: formatLocalDate(hoje),
+  };
 }
 
 async function listarAgendamentos(req, res, next) {

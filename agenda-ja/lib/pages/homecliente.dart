@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/agendamento.dart';
 import '../services/agendamento_service.dart';
+import '../services/api_client.dart';
 import '../services/auth_session.dart';
 import '../utils/date_utils.dart';
 import 'agendar.dart';
@@ -32,8 +33,20 @@ class _HomeClientePageState extends State<HomeClientePage> {
     try {
       final ags = await AgendamentoService.instance.meusAgendamentos();
       if (mounted) setState(() => _agendamentos = ags);
-    } catch (_) {
-      if (mounted) setState(() => _agendamentos = []);
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() => _agendamentos = []);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar agendamentos: ${e.message}'), backgroundColor: Colors.redAccent),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _agendamentos = []);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar agendamentos: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
     } finally {
       if (mounted) setState(() => _carregando = false);
     }

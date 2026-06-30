@@ -30,11 +30,11 @@ async function findAll({ dataInicio, dataFim, status } = {}) {
 
   if (dataInicio) {
     params.push(dataInicio);
-    conditions.push(`a.data_hora_inicio >= $${params.length}`);
+    conditions.push(`a.data_hora_inicio::date >= $${params.length}::date`);
   }
   if (dataFim) {
     params.push(dataFim);
-    conditions.push(`a.data_hora_inicio <= $${params.length}`);
+    conditions.push(`a.data_hora_inicio::date <= $${params.length}::date`);
   }
   if (status) {
     params.push(status);

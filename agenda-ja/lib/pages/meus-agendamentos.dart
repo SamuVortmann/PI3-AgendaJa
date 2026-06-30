@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/agendamento.dart';
 import '../services/agendamento_service.dart';
+import '../services/api_client.dart';
 import '../utils/date_utils.dart';
 import 'detalhes_agendamento.dart';
 
@@ -27,8 +28,18 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
     try {
       final ags = await AgendamentoService.instance.meusAgendamentos();
       if (mounted) setState(() => _agendamentos = ags);
-    } catch (_) {
-      if (mounted) setState(() => _agendamentos = []);
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.redAccent),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
     } finally {
       if (mounted) setState(() => _carregando = false);
     }

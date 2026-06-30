@@ -58,7 +58,12 @@ async function criar(req, res, next) {
     });
 
     const agendamentoCompleto = await agendamentoModel.findById(criado.id);
-    await whatsappService.enviarConfirmacaoAgendamento(agendamentoCompleto);
+
+    try {
+      await whatsappService.enviarConfirmacaoAgendamento(agendamentoCompleto);
+    } catch (err) {
+      console.error('WhatsApp confirmação:', err.message);
+    }
 
     res.status(201).json(agendamentoCompleto);
   } catch (err) {
@@ -84,7 +89,7 @@ async function cancelar(req, res, next) {
       return res.status(404).json({ erro: 'Agendamento não encontrado' });
     }
 
-    const isDono = agendamento.cliente_id === req.usuario.id;
+    const isDono = Number(agendamento.cliente_id) === Number(req.usuario.id);
     const isAdmin = req.usuario.perfil === 'admin';
 
     if (!isDono && !isAdmin) {

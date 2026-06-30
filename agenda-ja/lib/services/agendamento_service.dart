@@ -1,4 +1,5 @@
 import '../models/agendamento.dart';
+import '../utils/json_utils.dart';
 import 'api_client.dart';
 
 class DashboardTotais {
@@ -14,9 +15,9 @@ class DashboardTotais {
 
   factory DashboardTotais.fromJson(Map<String, dynamic> json) {
     return DashboardTotais(
-      hoje: json['agendamentos_hoje'] as int,
-      semana: json['agendamentos_semana'] as int,
-      mes: json['agendamentos_mes'] as int,
+      hoje: parseJsonInt(json['agendamentos_hoje']),
+      semana: parseJsonInt(json['agendamentos_semana']),
+      mes: parseJsonInt(json['agendamentos_mes']),
     );
   }
 }
@@ -42,7 +43,8 @@ class AgendamentoService {
 
   Future<List<Agendamento>> meusAgendamentos() async {
     final data = await _api.get('/agendamentos/meus', auth: true);
-    return (data as List)
+    if (data is! List) return [];
+    return data
         .map((e) => Agendamento.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -56,11 +58,13 @@ class AgendamentoService {
     String? visao,
     String? status,
   }) async {
-    var path = '/admin/agendamentos?';
-    if (visao != null) path += 'visao=$visao&';
-    if (status != null) path += 'status=$status&';
-    final data = await _api.get(path, auth: true);
-    return (data as List)
+    final params = <String>[];
+    if (visao != null) params.add('visao=$visao');
+    if (status != null) params.add('status=$status');
+    final query = params.isEmpty ? '' : '?${params.join('&')}';
+    final data = await _api.get('/admin/agendamentos$query', auth: true);
+    if (data is! List) return [];
+    return data
         .map((e) => Agendamento.fromJson(e as Map<String, dynamic>))
         .toList();
   }

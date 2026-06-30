@@ -231,22 +231,32 @@ class _AgendamentoEmpresaDetalhesPageState extends State<AgendamentoEmpresaDetal
                                         itemBuilder: (context, index) {
                                           if (index < _primeiroDiaMes()) return const SizedBox();
                                           final dia = index - _primeiroDiaMes() + 1;
+                                          final dataDia = DateTime(_mesAtual.year, _mesAtual.month, dia);
+                                          final hoje = DateTime.now();
+                                          final hojeLimpo = DateTime(hoje.year, hoje.month, hoje.day);
+                                          final noPassado = dataDia.isBefore(hojeLimpo);
                                           final selecionado = dia == _diaSelecionado;
                                           return GestureDetector(
-                                            onTap: () {
-                                              setState(() => _diaSelecionado = dia);
-                                              _carregarHorarios();
-                                            },
+                                            onTap: noPassado
+                                                ? null
+                                                : () {
+                                                    setState(() => _diaSelecionado = dia);
+                                                    _carregarHorarios();
+                                                  },
                                             child: Container(
                                               alignment: Alignment.center,
                                               decoration: BoxDecoration(
-                                                color: selecionado ? const Color(0xFF111934) : Colors.transparent,
+                                                color: selecionado
+                                                    ? const Color(0xFF111934)
+                                                    : Colors.transparent,
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Text(
                                                 '$dia',
                                                 style: TextStyle(
-                                                  color: selecionado ? Colors.white : Colors.black,
+                                                  color: noPassado
+                                                      ? Colors.grey
+                                                      : (selecionado ? Colors.white : Colors.black),
                                                   fontWeight: selecionado ? FontWeight.bold : FontWeight.normal,
                                                 ),
                                               ),

@@ -1,3 +1,5 @@
+import '../utils/json_utils.dart';
+
 class HorarioLivre {
   final String horario;
   final String dataHoraInicio;
@@ -12,8 +14,8 @@ class HorarioLivre {
   factory HorarioLivre.fromJson(Map<String, dynamic> json) {
     return HorarioLivre(
       horario: json['horario'] as String,
-      dataHoraInicio: json['data_hora_inicio'] as String,
-      dataHoraFim: json['data_hora_fim'] as String,
+      dataHoraInicio: json['data_hora_inicio'].toString(),
+      dataHoraFim: json['data_hora_fim'].toString(),
     );
   }
 }
@@ -51,25 +53,33 @@ class Agendamento {
 
   factory Agendamento.fromJson(Map<String, dynamic> json) {
     return Agendamento(
-      id: json['id'] as int,
-      clienteId: json['cliente_id'] as int,
-      profissionalId: json['profissional_id'] as int,
-      servicoId: json['servico_id'] as int,
-      dataHoraInicio: DateTime.parse(json['data_hora_inicio'] as String),
-      dataHoraFim: DateTime.parse(json['data_hora_fim'] as String),
-      status: json['status'] as String,
-      clienteNome: json['cliente_nome'] as String?,
-      clienteTelefone: json['cliente_telefone'] as String?,
-      profissionalNome: json['profissional_nome'] as String?,
-      servicoNome: json['servico_nome'] as String?,
-      duracaoMinutos: json['duracao_minutos'] as int?,
-      preco: json['preco'] != null ? (json['preco'] as num).toDouble() : null,
+      id: parseJsonInt(json['id']),
+      clienteId: parseJsonInt(json['cliente_id']),
+      profissionalId: parseJsonInt(json['profissional_id']),
+      servicoId: parseJsonInt(json['servico_id']),
+      dataHoraInicio: parseJsonDate(json['data_hora_inicio']),
+      dataHoraFim: parseJsonDate(json['data_hora_fim']),
+      status: json['status'].toString(),
+      clienteNome: parseJsonString(json['cliente_nome']),
+      clienteTelefone: parseJsonString(json['cliente_telefone']),
+      profissionalNome: parseJsonString(json['profissional_nome']),
+      servicoNome: parseJsonString(json['servico_nome']),
+      duracaoMinutos: json['duracao_minutos'] != null
+          ? parseJsonInt(json['duracao_minutos'])
+          : null,
+      preco: parseJsonDouble(json['preco']),
     );
   }
 
   bool get isCancelado => status == 'cancelado';
-  bool get isFuturo =>
-      !isCancelado && dataHoraInicio.isAfter(DateTime.now());
-  bool get isPassado =>
-      !isCancelado && dataHoraFim.isBefore(DateTime.now());
+
+  bool get isFuturo {
+    if (isCancelado) return false;
+    return !dataHoraFim.isBefore(DateTime.now());
+  }
+
+  bool get isPassado {
+    if (isCancelado) return false;
+    return dataHoraFim.isBefore(DateTime.now());
+  }
 }

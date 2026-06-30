@@ -31,13 +31,14 @@ class _HomeEmpresaPageState extends State<HomeEmpresaPage> {
     setState(() => _carregando = true);
     try {
       final dash = await AgendamentoService.instance.dashboard();
-      final ags = await AgendamentoService.instance.listarAdmin(visao: 'dia');
+      final ags = await AgendamentoService.instance.listarAdmin(visao: 'semana');
       if (mounted) {
         setState(() {
           _hoje = dash.hoje;
           _semana = dash.semana;
           _mes = dash.mes;
-          _agendamentosHoje = ags.where((a) => !a.isCancelado).toList();
+          _agendamentosHoje = ags.where((a) => !a.isCancelado && a.isFuturo).toList()
+            ..sort((a, b) => a.dataHoraInicio.compareTo(b.dataHoraInicio));
         });
       }
     } catch (_) {}
@@ -121,14 +122,14 @@ class _HomeEmpresaPageState extends State<HomeEmpresaPage> {
                                 ),
                               ),
                               const SizedBox(height: 30),
-                              const Text('Agendamentos de hoje:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const Text('Próximos agendamentos (semana):', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 10),
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(color: const Color(0xFF111934), borderRadius: BorderRadius.circular(15)),
                                 child: _agendamentosHoje.isEmpty
-                                    ? const Text('Nenhum agendamento para hoje', style: TextStyle(color: Colors.white70))
+                                    ? const Text('Nenhum agendamento nesta semana', style: TextStyle(color: Colors.white70))
                                     : Column(
                                         children: _agendamentosHoje.map((ag) => Padding(
                                               padding: const EdgeInsets.only(bottom: 8),

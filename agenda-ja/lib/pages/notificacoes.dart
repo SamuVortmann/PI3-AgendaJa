@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/agendamento.dart';
 import '../services/agendamento_service.dart';
+import '../services/api_client.dart';
 import '../utils/date_utils.dart';
 
 class NotificacoesPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class NotificacoesPage extends StatefulWidget {
 class _NotificacoesPageState extends State<NotificacoesPage> {
   List<Agendamento> _agendamentos = [];
   bool _carregando = true;
+  String? _erro;
 
   @override
   void initState() {
@@ -22,12 +24,17 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
   }
 
   Future<void> _carregar() async {
-    setState(() => _carregando = true);
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
     try {
       final ags = await AgendamentoService.instance.meusAgendamentos();
       if (mounted) setState(() => _agendamentos = ags);
-    } catch (_) {
-      if (mounted) setState(() => _agendamentos = []);
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _erro = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _erro = e.toString());
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
@@ -43,7 +50,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
       if (ag.status == 'confirmado') {
         lista.add({
           'icon': '✔',
-          'text': 'Seu horário foi confirmado\n${formatarData(ag.dataHoraInicio)} • ${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome}',
+          'text': 'Seu horário foi confirmado\n${formatarData(ag.dataHoraInicio)} • ${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome ?? "Serviço"}',
         });
       }
 
@@ -51,14 +58,14 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
       if (diff.inHours >= 20 && diff.inHours <= 28 && ag.isFuturo) {
         lista.add({
           'icon': '⏰',
-          'text': 'Você tem um horário amanhã\n${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome}',
+          'text': 'Você tem um horário amanhã\n${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome ?? "Serviço"}',
         });
       }
 
       if (ag.status == 'pendente' && ag.isFuturo) {
         lista.add({
           'icon': '📋',
-          'text': 'Agendamento pendente de confirmação\n${formatarData(ag.dataHoraInicio)} • ${ag.servicoNome}',
+          'text': 'Agendamento pendente de confirmação\n${formatarData(ag.dataHoraInicio)} • ${ag.servicoNome ?? "Serviço"}',
         });
       }
     }
@@ -75,13 +82,24 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              height: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               color: const Color(0xFF111934),
-              child: Column(
+              child: Row(
                 children: [
-                  Image.asset('assets/logo.png', width: 60, errorBuilder: (_, __, ___) => const Text('A', style: TextStyle(color: Colors.white, fontSize: 28))),
-                  const SizedBox(height: 20),
-                  const Text('Notificações', style: TextStyle(color: Colors.white, fontSize: 32)),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  ),
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'Notificações',
+                        style: TextStyle(color: Colors.white, fontSize: 22),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -94,22 +112,41 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                 ),
                 child: _carregando
                     ? const Center(child: CircularProgressIndicator())
-                    : RefreshIndicator(
-                        onRefresh: _carregar,
-                        child: notificacoes.isEmpty
-                            ? const ListTile(title: Text('Nenhuma notificação no momento'))
-                            : ListView.builder(
-                                padding: const EdgeInsets.all(30),
-                                itemCount: notificacoes.length,
-                                itemBuilder: (_, i) {
-                                  final n = notificacoes[i];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: _buildNotificationCard(icon: n['icon']!, text: n['text']!),
-                                  );
-                                },
+                    : _erro != null
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(_erro!, textAlign: TextAlign.center),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton(onPressed: _carregar, child: const Text('Tentar novamente')),
+                                ],
                               ),
-                      ),
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _carregar,
+                            child: notificacoes.isEmpty
+                                ? ListView(
+                                    children: const [
+                                      SizedBox(height: 80),
+                                      Center(child: Text('Nenhuma notificação no momento')),
+                                    ],
+                                  )
+                                : ListView.builder(
+                                    padding: const EdgeInsets.all(30),
+                                    itemCount: notificacoes.length,
+                                    itemBuilder: (_, i) {
+                                      final n = notificacoes[i];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 16),
+                                        child: _buildNotificationCard(icon: n['icon']!, text: n['text']!),
+                                      );
+                                    },
+                                  ),
+                          ),
               ),
             ),
           ],

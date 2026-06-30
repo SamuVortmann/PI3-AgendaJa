@@ -13,7 +13,7 @@ class AgendaPage extends StatefulWidget {
 }
 
 class _AgendaPageState extends State<AgendaPage> {
-  String _visao = 'dia';
+  String _visao = 'semana';
   List<Agendamento> _agendamentos = [];
   bool _carregando = true;
 
@@ -130,6 +130,15 @@ class _AgendaPageState extends State<AgendaPage> {
                             selected: _visao == 'semana',
                             onSelected: (_) {
                               setState(() => _visao = 'semana');
+                              _carregar();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: const Text('Todos'),
+                            selected: _visao == 'todos',
+                            onSelected: (_) {
+                              setState(() => _visao = 'todos');
                               _carregar();
                             },
                           ),
