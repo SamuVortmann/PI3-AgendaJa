@@ -81,13 +81,13 @@ class _LoginPgState extends State<LoginPg> {
                   children: [
                     Container(
                       width: double.infinity,
-                      height: 220,
+                      height: 150,
                       color: const Color(0xFF111934),
                       child: Stack(
                         children: [
                           Positioned(
-                            top: 40,
-                            left: 10,
+                            top: 50,
+                            left: 20,
                             child: IconButton(
                               icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
                               onPressed: () => Navigator.pop(context),
@@ -97,8 +97,11 @@ class _LoginPgState extends State<LoginPg> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 60),
-                                Image.asset('assets/logo.png', width: 130),
+                                const SizedBox(height: 0),
+                                Text(
+                                  'Entrar',
+                                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                ),
                               ],
                             ),
                           ),
@@ -109,7 +112,7 @@ class _LoginPgState extends State<LoginPg> {
                       child: Container(
                         width: double.infinity,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFF1F1F1),
+                          color: Colors.white,
                           borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                         ),
                         child: Padding(
@@ -117,10 +120,16 @@ class _LoginPgState extends State<LoginPg> {
                           child: Column(
                             children: [
                               const Text(
-                                'Login',
-                                style: TextStyle(color: Colors.black, fontSize: 32, fontWeight: FontWeight.w500),
+                                'Bem-vindo de volta',
+                                style: TextStyle(color: Colors.black, fontSize: 28, fontWeight: FontWeight.bold),
                               ),
-                              const SizedBox(height: 40),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Entre para gerenciar seus agendamentos',
+                                style: TextStyle(color: Colors.black54, fontSize: 16),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 30),
                               _campo('Email:', _emailController, hint: 'seuemail@gmail.com'),
                               const SizedBox(height: 20),
                               _campo('Senha:', _senhaController, hint: '************', obscure: true),
@@ -131,7 +140,7 @@ class _LoginPgState extends State<LoginPg> {
                                 child: ElevatedButton(
                                   onPressed: _carregando ? null : _fazerLogin,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF111934),
+                                    backgroundColor: const Color(0xFF4285F4),
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
@@ -153,7 +162,7 @@ class _LoginPgState extends State<LoginPg> {
                                     onTap: () => Navigator.pushNamed(context, '/cadastro'),
                                     child: const Text(
                                       'CADASTRE-SE',
-                                      style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF111934), fontWeight: FontWeight.bold),
+                                      style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF4285F4), fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
@@ -176,24 +185,28 @@ class _LoginPgState extends State<LoginPg> {
   }
 
   Widget _campo(String titulo, TextEditingController controller, {String? hint, bool obscure = false}) {
-    return Container(
-      width: double.infinity,
-      height: 85,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(titulo, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 5),
-          TextField(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(titulo, style: const TextStyle(fontSize: 16, color: Colors.black)),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: TextField(
             controller: controller,
             obscureText: obscure,
-            keyboardType: titulo.contains('Email') ? TextInputType.emailAddress : TextInputType.text,
+            keyboardType: titulo.contains("Email") ? TextInputType.emailAddress : TextInputType.text,
             decoration: InputDecoration(hintText: hint, border: InputBorder.none, isCollapsed: true),
+            style: const TextStyle(color: Colors.black),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

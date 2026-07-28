@@ -98,35 +98,45 @@ class _CadastroPageState extends State<CadastroPage> {
                   children: [
                     Container(
                       width: double.infinity,
-                      height: 120,
+                      height: 150,
                       color: const Color(0xFF111934),
                       child: Stack(
                         children: [
-                          Positioned(
-                            top: 20,
-                            left: 10,
-                            child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-                              onPressed: () => Navigator.pop(context),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 50, left: 20),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Criar conta',
+                                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
-                          ),
-                          const Center(
-                            child: Text('Cadastro', style: TextStyle(color: Colors.white, fontSize: 30)),
                           ),
                         ],
                       ),
                     ),
                     Container(
                       width: double.infinity,
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight - 120),
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight - 150),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF1F1F1),
+                        color: Colors.white,
                         borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 30),
                         child: Column(
                           children: [
+                            const Text(
+                              'Vamos começar',
+                              style: TextStyle(color: Colors.black, fontSize: 28, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 30),
                             campo(titulo: 'Nome completo:', hint: 'seu nome completo', controller: nomeController),
                             const SizedBox(height: 22),
                             campo(titulo: 'Email:', hint: 'seuemail@gmail.com', controller: emailController),
@@ -137,48 +147,57 @@ class _CadastroPageState extends State<CadastroPage> {
                             const SizedBox(height: 22),
                             campo(titulo: 'Confirmar senha:', hint: '**************', controller: confirmarSenhaController, obscure: true),
                             const SizedBox(height: 22),
-                            Container(
+                            const SizedBox(height: 22),
+                            _buildAccountTypeCard(
+                              icon: Icons.person,
+                              title: 'Sou Cliente',
+                              subtitle: 'Quero encontrar profissionais',
+                              value: 'cliente',
+                              groupValue: tipoConta,
+                              onChanged: (value) => setState(() => tipoConta = value),
+                            ),
+                            const SizedBox(height: 15),
+                            _buildAccountTypeCard(
+                              icon: Icons.business,
+                              title: 'Sou Profissional / Empresa',
+                              subtitle: 'Quero gerenciar minha agenda',
+                              value: 'empresa',
+                              groupValue: tipoConta,
+                              onChanged: (value) => setState(() => tipoConta = value),
+                            ),
+                            const SizedBox(height: 35),
+                            SizedBox(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Tipo de conta:', style: TextStyle(fontSize: 16)),
-                                  Row(
-                                    children: [
-                                      Radio<String>(
-                                        value: 'cliente',
-                                        groupValue: tipoConta,
-                                        activeColor: const Color(0xFF111934),
-                                        onChanged: (v) => setState(() => tipoConta = v!),
-                                      ),
-                                      const Text('Cliente'),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Radio<String>(
-                                        value: 'empresa',
-                                        groupValue: tipoConta,
-                                        activeColor: const Color(0xFF111934),
-                                        onChanged: (v) => setState(() => tipoConta = v!),
-                                      ),
-                                      const Text('Empresa/ profissional'),
-                                    ],
-                                  ),
-                                ],
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: _carregando ? null : validarECadastrar,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4285F4),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: _carregando
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      )
+                                    : const Text('Criar conta', style: TextStyle(fontSize: 20)),
                               ),
                             ),
-                            const SizedBox(height: 45),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: _carregando ? null : validarECadastrar,
-                                child: _carregando
-                                    ? const CircularProgressIndicator()
-                                    : const Text('CONTINUAR ➜', style: TextStyle(color: Color(0xFF111934), fontSize: 18, fontWeight: FontWeight.bold)),
-                              ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('Já tem uma conta? ', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.black54)),
+                                GestureDetector(
+                                  onTap: () => Navigator.pushNamed(context, 'login'),
+                                  child: const Text(
+                                    "Entrar",
+                                    style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF4285F4), fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 40),
                           ],
@@ -196,43 +215,106 @@ class _CadastroPageState extends State<CadastroPage> {
   }
 
   Widget campo({required String titulo, required String hint, required TextEditingController controller, bool obscure = false}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(titulo, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 5),
-          TextField(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(titulo, style: const TextStyle(fontSize: 16, color: Colors.black)),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: TextField(
             controller: controller,
             obscureText: obscure,
             decoration: InputDecoration(hintText: hint, hintStyle: const TextStyle(color: Colors.grey), border: InputBorder.none, isCollapsed: true),
+            style: const TextStyle(color: Colors.black),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountTypeCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String value,
+    required String groupValue,
+    required ValueChanged<String> onChanged,
+  }) {
+    final isSelected = value == groupValue;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? const Color(0xFF4285F4) : Colors.grey.shade300, width: isSelected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFFE3F2FD) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: isSelected ? const Color(0xFF4285F4) : Colors.grey.shade600, size: 28),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 20),
+          ],
+        ),
       ),
     );
   }
 
   Widget campoTelefone() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Telefone:', style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 5),
-          TextField(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Telefone:', style: TextStyle(fontSize: 16, color: Colors.black)),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: TextField(
             controller: telefoneController,
             keyboardType: TextInputType.phone,
             inputFormatters: [TelefoneInputFormatter()],
             decoration: const InputDecoration(hintText: '(49)99999-9999', border: InputBorder.none, isCollapsed: true),
+            style: const TextStyle(color: Colors.black),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
