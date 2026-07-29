@@ -6,7 +6,8 @@ import '../services/api_client.dart';
 import '../services/auth_session.dart';
 import '../utils/date_utils.dart';
 import 'agendar.dart';
-import 'menu.dart';
+import 'meus-agendamentos.dart';
+import 'perfil_cliente.dart'; // Certifique-se que o nome do arquivo é este
 
 class HomeClientePage extends StatefulWidget {
   const HomeClientePage({super.key});
@@ -16,7 +17,6 @@ class HomeClientePage extends StatefulWidget {
 }
 
 class _HomeClientePageState extends State<HomeClientePage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Agendamento> _agendamentos = [];
   bool _carregando = true;
   int _selectedIndex = 0;
@@ -60,108 +60,140 @@ class _HomeClientePageState extends State<HomeClientePage> {
     return futuros.first;
   }
 
+  void _onItemTapped(int index) async {
+    if (index == _selectedIndex) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
+    
+    final usuario = AuthSession.instance.usuario!;
+
+    switch (index) {
+      case 0: // Início
+        _carregar();
+        break;
+      case 1: // Agenda
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MeusAgendamentosPage()),
+        );
+        setState(() => _selectedIndex = 0);
+        _carregar();
+        break;
+      case 2: // Avisos
+        break;
+      case 3: // Perfil (LINKADO AGORA)
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PerfilPage(nome: usuario.nome, telefone: usuario.telefone ?? ''),
+          ),
+        );
+        setState(() => _selectedIndex = 0);
+        _carregar();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final usuario = AuthSession.instance.usuario!;
     final nome = usuario.nome;
-    final telefone = usuario.telefone ?? '';
 
     return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: MenuCliente(nome: nome, telefone: telefone),
+      backgroundColor: const Color(0xFF111934),
       body: SafeArea(
         child: Column(
           children: [
-            // PARTE SUPERIOR ORIGINAL MANTIDA
             Container(
               width: double.infinity,
               height: 100,
               padding: const EdgeInsets.symmetric(horizontal: 18),
-              decoration: const BoxDecoration(
-                color: Color(0xFF111934),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
+              color: const Color(0xFF111934),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    icon: const Icon(Icons.menu, color: Colors.white, size: 34),
-                  ),
                   Image.asset('assets/logo.png', width: 100,
                       errorBuilder: (_, __, ___) => const Icon(Icons.image, color: Colors.white)),
-                  const SizedBox(width: 34),
                 ],
               ),
             ),
             
-            // CONTEÚDO NOVO CONFORME WIREFRAME
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: _carregar,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Olá, $nome!',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF111934)),
-                          ),
-                          const Icon(Icons.notifications_none_outlined, size: 28),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      
-                      // BARRA DE BUSCA
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(color: Colors.grey.shade300),
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F1F1),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
+                ),
+                child: RefreshIndicator(
+                  onRefresh: _carregar,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Olá, $nome!',
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF111934)),
+                            ),
+                            const Icon(Icons.notifications_none_outlined, size: 28),
+                          ],
                         ),
-                        child: const TextField(
-                          decoration: InputDecoration(
-                            icon: Icon(Icons.search, color: Colors.grey),
-                            hintText: 'Buscar serviço ou profissional',
-                            border: InputBorder.none,
-                            hintStyle: TextStyle(color: Colors.grey),
+                        const SizedBox(height: 20),
+                        
+                        GestureDetector(
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AgendarPage()),
+                            );
+                            _carregar();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.search, color: Colors.grey),
+                                SizedBox(width: 10),
+                                Text('Buscar serviço ou profissional', style: TextStyle(color: Colors.grey)),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 30),
-                      
-                      const Text(
-                        'Próximo agendamento',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF111934)),
-                      ),
-                      const SizedBox(height: 15),
-                      
-                      // CARD PRÓXIMO AGENDAMENTO
-                      _buildProximoAgendamentoCard(),
-                      
-                      const SizedBox(height: 30),
-                      
-                      const Text(
-                        'Serviços em destaque',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF111934)),
-                      ),
-                      const SizedBox(height: 15),
-                      
-                      // LISTA DE SERVIÇOS (MOCKUP ESTILO WIREFRAME)
-                      _buildServicoItem('Corte de Cabelo', '45 min', 'R\$ 45,00'),
-                      _buildServicoItem('Manicure', '40 min', 'R\$ 35,00'),
-                      _buildServicoItem('Barba', '25 min', 'R\$ 25,00'),
-                    ],
+                        const SizedBox(height: 30),
+                        
+                        const Text(
+                          'Próximo agendamento',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF111934)),
+                        ),
+                        const SizedBox(height: 15),
+                        
+                        _buildProximoAgendamentoCard(),
+                        
+                        const SizedBox(height: 30),
+                        
+                        const Text(
+                          'Serviços em destaque',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF111934)),
+                        ),
+                        const SizedBox(height: 15),
+                        
+                        _buildServicoItem('Corte de Cabelo', '45 min', 'R\$ 45,00'),
+                        _buildServicoItem('Manicure', '40 min', 'R\$ 35,00'),
+                        _buildServicoItem('Barba', '25 min', 'R\$ 25,00'),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -171,7 +203,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF111934),
         unselectedItemColor: Colors.grey,
@@ -230,7 +262,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'com Profissional', // Idealmente viria do banco
+                    'com ${ag.profissionalNome ?? "Profissional"}',
                     style: TextStyle(color: Colors.grey.shade600),
                   ),
                 ],

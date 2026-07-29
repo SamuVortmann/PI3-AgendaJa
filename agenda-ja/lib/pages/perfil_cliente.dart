@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
+import '../services/auth_session.dart';
+import 'meus-agendamentos.dart';
 import 'notificacoes.dart';
 
 class PerfilPage extends StatefulWidget {
@@ -32,8 +34,22 @@ class _PerfilPageState extends State<PerfilPage> {
   }
 
   Future<void> _sair() async {
-    await AuthService.instance.logout();
-    if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sair da conta'),
+        content: const Text('Deseja realmente sair da sua conta?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('CANCELAR')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('SAIR', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      await AuthService.instance.logout();
+      if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+    }
   }
 
   @override
@@ -43,56 +59,100 @@ class _PerfilPageState extends State<PerfilPage> {
       body: SafeArea(
         child: Column(
           children: [
+            // CABEÇALHO COM BOTÃO VOLTAR
             Container(
               width: double.infinity,
-              height: 220,
+              height: 100,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               color: const Color(0xFF111934),
-              child: Stack(
+              child: Row(
                 children: [
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-                      onPressed: () => Navigator.pop(context),
-                    ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context), 
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24)
                   ),
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset('assets/logo.png', width: 60, errorBuilder: (_, __, ___) => const Icon(Icons.circle, color: Colors.white)),
-                        const SizedBox(height: 20),
-                        Text(_nomeController.text, style: const TextStyle(color: Colors.white, fontSize: 20)),
-                        Text('Telefone: ${_telefoneController.text}', style: const TextStyle(color: Colors.white70)),
-                      ],
-                    ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Meu perfil',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
+            
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF1F1F1),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(30),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
                   child: Column(
                     children: [
-                      _buildProfileButton(
+                      // AVATAR
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey.shade200,
+                        child: Icon(Icons.person, size: 50, color: Colors.grey.shade400),
+                      ),
+                      const SizedBox(height: 30),
+                      
+                      // CAMPOS DE TEXTO (SOMENTE LEITURA OU EDIÇÃO VISUAL)
+                      TextField(
+                        controller: _nomeController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nome',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _telefoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Telefone',
+                          prefixIcon: Icon(Icons.phone_outlined),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 40),
+                      
+                      // OPÇÕES ADICIONAIS
+                      _buildMenuOption(
+                        icon: Icons.calendar_today_outlined,
+                        titulo: 'Meus agendamentos',
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MeusAgendamentosPage())),
+                      ),
+                      _buildMenuOption(
+                        icon: Icons.notifications_none_outlined,
                         titulo: 'Notificações',
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificacoesPage())),
                       ),
-                      const Spacer(),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: TextButton.icon(
-                          onPressed: _sair,
-                          icon: const Icon(Icons.arrow_back, color: Colors.black54, size: 18),
-                          label: const Text('SAIR', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+                      
+                      const SizedBox(height: 30),
+                      
+                      // BOTÃO SAIR
+                      GestureDetector(
+                        onTap: _sair,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.logout, color: Colors.red.shade700, size: 20),
+                              const SizedBox(width: 10),
+                              Text(
+                                'SAIR DA CONTA',
+                                style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -106,20 +166,16 @@ class _PerfilPageState extends State<PerfilPage> {
     );
   }
 
-  Widget _buildProfileButton({required String titulo, required VoidCallback onTap}) {
-    return SizedBox(
-      width: double.infinity,
-      height: 65,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        ),
-        child: Text(titulo, style: const TextStyle(fontSize: 18)),
+  Widget _buildMenuOption({required IconData icon, required String titulo, required VoidCallback onTap}) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      leading: Icon(icon, color: Colors.black87, size: 28),
+      title: Text(
+        titulo,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Color(0xFF111934)),
       ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
     );
   }
 }
