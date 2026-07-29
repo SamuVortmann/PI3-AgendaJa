@@ -14,11 +14,16 @@ class AuthService {
     required String email,
     required String senha,
     String? telefone,
+    required String tipoConta, // Adicionado parâmetro
   }) async {
+    // Mapeia o tipo de conta para o perfil esperado pela API
+    final perfil = tipoConta == 'empresa' ? 'admin' : 'cliente';
+
     final data = await _api.post('/auth/register', body: {
       'nome': nome,
       'email': email,
       'senha': senha,
+      'perfil': perfil, // Enviando o perfil para a API
       if (telefone != null && telefone.isNotEmpty) 'telefone': telefone,
     });
 

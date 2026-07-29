@@ -26,18 +26,19 @@ class MeuApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Agenda Já',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF111934)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F2937)),
         useMaterial3: true,
       ),
+      // Definindo as rotas nomeadas
       routes: {
-        '/login': (context) => const LoginPg(),
-        '/cadastro': (context) => const CadastroPage(),
-        '/home_cliente': (context) => const HomeClientePage(),
-        '/home_empresa': (context) => const HomeEmpresaPage(),
-        '/admin_gestao': (context) => const AdminGestaoPage(),
-        '/admin_agenda': (context) => const AgendaPage(),
-        '/detalhes_empresa': (context) => const AgendamentoEmpresaDetalhesPage(),
-        '/confirmacao': (context) => const ConfirmacaoAgendamentoPage(),
+        'login': (context) => const LoginPg(),
+        'cadastro': (context) => const CadastroPage(),
+        'cadastro_empresa': (context) => const CadastroEmpresaPage(), // Adicionada
+        'home_cliente': (context) => const HomeClientePage(),
+        'home_empresa': (context) => const HomeEmpresaPage(),
+        'admin_gestao': (context) => const AdminGestaoPage(),
+        'detalhes_empresa': (context) => const AgendamentoEmpresaDetalhesPage(),
+        'confirmacao': (context) => const ConfirmacaoAgendamentoPage(),
       },
       home: const PaginaInicial(),
     );
