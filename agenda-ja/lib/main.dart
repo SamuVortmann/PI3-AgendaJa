@@ -10,6 +10,7 @@ import 'pages/homecliente.dart';
 import 'pages/login_pg.dart';
 import 'pages/primeira_pg.dart';
 import 'services/auth_session.dart';
+import 'ui/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,10 +26,8 @@ class MeuApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Agenda Já',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F2937)),
-        useMaterial3: true,
-      ),
+      // Tema único para todas as telas, independente da fonte dos dados.
+      theme: agendaTheme(),
       // Definindo as rotas nomeadas
       routes: {
         'login': (context) => const LoginPg(),

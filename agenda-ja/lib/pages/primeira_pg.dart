@@ -4,6 +4,7 @@ import 'cssprimeira_pg.dart';
 import 'login_pg.dart';
 import 'cadastro.dart';
 import '../services/auth_session.dart';
+import '../services/auth_service.dart';
 import 'home_empresa.dart';
 import 'homecliente.dart';
 
@@ -24,6 +25,17 @@ class _PaginaInicialState extends State<PaginaInicial> {
   Future<void> _verificarSessao() async {
     final session = AuthSession.instance;
     if (!session.isLoggedIn) return;
+
+    // Um token guardado pode ter expirado (ou ter sido criado antes de uma
+    // troca da JWT_SECRET). Confirme-o no servidor antes de abrir a home.
+    // Em caso de falha, a sessão antiga é descartada e a tela de entrada fica
+    // disponível normalmente, sem deixar o usuário preso em "token inválido".
+    try {
+      await AuthService.instance.me();
+    } catch (_) {
+      await session.clear();
+      return;
+    }
 
     await Future<void>.delayed(Duration.zero);
     if (!mounted) return;

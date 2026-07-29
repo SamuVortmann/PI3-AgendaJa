@@ -16,12 +16,12 @@ async function findById(id) {
   return result.rows[0];
 }
 
-async function create({ nome, email, senhaHash, telefone }) {
+async function create({ nome, email, senhaHash, telefone, perfil = 'cliente' }) {
   const result = await pool.query(
     `INSERT INTO usuarios (nome, email, senha_hash, telefone, perfil)
-     VALUES ($1, $2, $3, $4, 'cliente')
+     VALUES ($1, $2, $3, $4, $5)
      RETURNING id, nome, email, telefone, perfil, criado_em`,
-    [nome, email, senhaHash, telefone || null]
+    [nome, email, senhaHash, telefone || null, perfil]
   );
   return result.rows[0];
 }

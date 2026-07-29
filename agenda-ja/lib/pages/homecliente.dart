@@ -95,7 +95,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
                       ),
                       const SizedBox(height: 16),
-                      _itemServico('Corte de Cabelo', '45 min', ' 45,00'),
+                      _itemServico('Corte de Cabelo', '45 min', 'R 45,00'),
                       _itemServico('Manicure', '40 min', 'R 35,00'),
                       _itemServico('Barba', '25 min', 'R 25,00'),
                     ],

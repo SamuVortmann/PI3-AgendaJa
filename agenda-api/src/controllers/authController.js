@@ -12,7 +12,7 @@ function gerarToken(usuario) {
 
 async function register(req, res, next) {
   try {
-    const { nome, email, senha, telefone } = req.body;
+    const { nome, email, senha, telefone, perfil } = req.body;
 
     if (!nome || !email || !senha) {
       return res.status(400).json({ erro: 'Nome, e-mail e senha são obrigatórios' });
@@ -24,7 +24,9 @@ async function register(req, res, next) {
     }
 
     const senhaHash = await bcrypt.hash(senha, 10);
-    const usuario = await usuarioModel.create({ nome, email, senhaHash, telefone });
+    // Só os dois perfis esperados pelo aplicativo podem ser gravados.
+    const perfilSeguro = perfil === 'admin' ? 'admin' : 'cliente';
+    const usuario = await usuarioModel.create({ nome, email, senhaHash, telefone, perfil: perfilSeguro });
     const token = gerarToken(usuario);
 
     res.status(201).json({ usuario, token });
@@ -59,9 +61,3 @@ async function login(req, res, next) {
     next(err);
   }
 }
-
-async function me(req, res) {
-  res.json({ usuario: req.usuario });
-}
-
-module.exports = { register, login, me };
