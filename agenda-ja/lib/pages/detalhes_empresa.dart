@@ -311,9 +311,9 @@ class _AgendamentoEmpresaDetalhesPageState extends State<AgendamentoEmpresaDetal
                                                 context,
                                                 MaterialPageRoute(
                                                   builder: (_) => ConfirmacaoAgendamentoPage(
-                                                    servico: _servico,
-                                                    profissional: _profissionalSelecionado!,
-                                                    horario: _horarioSelecionado!,
+                                                   // servico: _servico,
+                                                    //profissional: _profissionalSelecionado!,
+                                                    //horario: _horarioSelecionado!,
                                                   ),
                                                 ),
                                               );

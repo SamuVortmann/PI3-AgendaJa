@@ -1,141 +1,180 @@
 import 'package:flutter/material.dart';
 
-import '../models/agendamento.dart';
-import '../services/agendamento_service.dart';
-import '../services/api_client.dart';
-import '../utils/date_utils.dart';
+class DetalhesAgendamentoPage extends StatelessWidget {
+  // Recebendo dados estáticos via construtor para facilitar o front-end
+  final Map<String, dynamic>? agendamento;
 
-class DetalhesAgendamentoPage extends StatefulWidget {
-  final Agendamento agendamento;
-
-  const DetalhesAgendamentoPage({super.key, required this.agendamento});
-
-  @override
-  State<DetalhesAgendamentoPage> createState() => _DetalhesAgendamentoPageState();
-}
-
-class _DetalhesAgendamentoPageState extends State<DetalhesAgendamentoPage> {
-  late Agendamento _ag;
-  bool _carregando = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _ag = widget.agendamento;
-  }
-
-  Color get statusColor {
-    switch (_ag.status) {
-      case 'confirmado':
-        return Colors.green;
-      case 'cancelado':
-        return Colors.red;
-      default:
-        return Colors.orange;
-    }
-  }
-
-  Future<void> _cancelar() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cancelar Agendamento'),
-        content: const Text('Tem certeza que deseja cancelar este compromisso?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Não')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sim, cancelar', style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    setState(() => _carregando = true);
-    try {
-      final atualizado = await AgendamentoService.instance.cancelar(_ag.id);
-      if (mounted) setState(() => _ag = atualizado);
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: Colors.redAccent),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _carregando = false);
-    }
-  }
+  const DetalhesAgendamentoPage({super.key, this.agendamento});
 
   @override
   Widget build(BuildContext context) {
+    // Usando dados passados ou valores padrão do wireframe
+    final servico = agendamento?['servico'] ?? 'Corte de cabelo';
+    final profissional = agendamento?['profissional'] ?? 'Ana Souza';
+    final data = agendamento?['data'] ?? 'Qui, 30 Jul - 14:00';
+    final status = agendamento?['status'] ?? 'confirmado';
+
     return Scaffold(
-      backgroundColor: const Color(0xFF111934),
+      backgroundColor: const Color(0xFF1F2937), // Azul marinho do topo
       body: SafeArea(
         child: Column(
           children: [
+            // CABEÇALHO (Fiel ao wireframe)
             Container(
-              width: double.infinity,
-              height: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              color: const Color(0xFF111934),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Row(
                 children: [
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30)),
-                  Expanded(child: Center(child: Image.asset('assets/logo.png', width: 100, errorBuilder: (_, __, ___) => const Icon(Icons.image, color: Colors.white)))),
-                  const SizedBox(width: 48),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Detalhes',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
+            
+            // CORPO BRANCO COM CANTO ARREDONDADO (60px)
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(color: Color(0xFFF1F1F1), borderRadius: BorderRadius.only(topLeft: Radius.circular(45))),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(60),
+                  ),
+                ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(30),
+                  padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
+                      const SizedBox(height: 20),
+                      
+                      // CARD DE INFORMAÇÃO PRINCIPAL
                       Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(25),
-                        decoration: BoxDecoration(color: const Color(0xFF111934), borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFF3F4F6)),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Detalhes agendamento', style: TextStyle(color: Colors.white54)),
-                            const SizedBox(height: 15),
-                            Center(
-                              child: Text(
-                                _ag.servicoNome ?? 'Serviço',
-                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text('Profissional: ${_ag.profissionalNome ?? "-"}', style: const TextStyle(color: Colors.white)),
-                            const SizedBox(height: 10),
-                            Text('Data: ${formatarData(_ag.dataHoraInicio)}', style: const TextStyle(color: Colors.white)),
-                            Text('Horário: ${formatarHora(_ag.dataHoraInicio)}', style: const TextStyle(color: Colors.white)),
-                            const SizedBox(height: 20),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(statusLabel(_ag.status), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold)),
-                            ),
-                            if (!_ag.isCancelado && _ag.isFuturo) ...[
-                              const SizedBox(height: 30),
-                              Center(
-                                child: SizedBox(
-                                  width: 200,
-                                  height: 45,
-                                  child: ElevatedButton(
-                                    onPressed: _carregando ? null : _cancelar,
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade900),
-                                    child: _carregando
-                                        ? const CircularProgressIndicator(color: Colors.white)
-                                        : const Text('Cancelar', style: TextStyle(color: Colors.white)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      servico,
+                                      style: const TextStyle(
+                                        fontSize: 18, 
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1F2937),
+                                      ),
+                                    ),
+                                    Text(
+                                      'com $profissional',
+                                      style: const TextStyle(color: Color(0xFF9CA3AF)),
+                                    ),
+                                  ],
+                                ),
+                                // Badge de Status
+                                Container(
+                                  width: 60,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: status == 'confirmado' ? const Color(0xFF22C55E) : const Color(0xFFF59E0B),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            const Divider(color: Color(0xFFF3F4F6)),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const Icon(Icons.access_time, size: 18, color: Color(0xFF9CA3AF)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  data,
+                                  style: const TextStyle(
+                                    color: Color(0xFF9CA3AF),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
+                            
+                            // DETALHES ADICIONAIS COM ÍCONES
+                            _itemDetalhe(Icons.access_time, 'Duração estimada: 45 min'),
+                            const SizedBox(height: 16),
+                            _itemDetalhe(Icons.phone_outlined, '(49) 90000-0000'),
+                            const SizedBox(height: 16),
+                            _itemDetalhe(Icons.star_border, 'Valor: R 45,00'),
                           ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 48),
+                      
+                      // BOTÃO REAGENDAR
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Reagendar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // BOTÃO CANCELAR
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFEF4444)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancelar agendamento',
+                            style: TextStyle(
+                              color: Color(0xFFEF4444),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -146,6 +185,22 @@ class _DetalhesAgendamentoPageState extends State<DetalhesAgendamentoPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _itemDetalhe(IconData icone, String texto) {
+    return Row(
+      children: [
+        Icon(icone, size: 20, color: const Color(0xFF9CA3AF)),
+        const SizedBox(width: 12),
+        Text(
+          texto,
+          style: const TextStyle(
+            color: Color(0xFF6B7280),
+            fontSize: 15,
+          ),
+        ),
+      ],
     );
   }
 }

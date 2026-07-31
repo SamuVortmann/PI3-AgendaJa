@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/agendamento.dart';
-import '../services/agendamento_service.dart';
-import '../services/api_client.dart';
-import '../utils/date_utils.dart';
-
 class NotificacoesPage extends StatefulWidget {
   const NotificacoesPage({super.key});
 
@@ -13,140 +8,86 @@ class NotificacoesPage extends StatefulWidget {
 }
 
 class _NotificacoesPageState extends State<NotificacoesPage> {
-  List<Agendamento> _agendamentos = [];
-  bool _carregando = true;
-  String? _erro;
-
-  @override
-  void initState() {
-    super.initState();
-    _carregar();
-  }
-
-  Future<void> _carregar() async {
-    setState(() {
-      _carregando = true;
-      _erro = null;
-    });
-    try {
-      final ags = await AgendamentoService.instance.meusAgendamentos();
-      if (mounted) setState(() => _agendamentos = ags);
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _erro = e.message);
-    } catch (e) {
-      if (mounted) setState(() => _erro = e.toString());
-    } finally {
-      if (mounted) setState(() => _carregando = false);
-    }
-  }
-
-  List<Map<String, String>> get notificacoes {
-    final lista = <Map<String, String>>[];
-    final agora = DateTime.now();
-
-    for (final ag in _agendamentos) {
-      if (ag.isCancelado) continue;
-
-      if (ag.status == 'confirmado') {
-        lista.add({
-          'icon': '✔',
-          'text': 'Seu horário foi confirmado\n${formatarData(ag.dataHoraInicio)} • ${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome ?? "Serviço"}',
-        });
-      }
-
-      final diff = ag.dataHoraInicio.difference(agora);
-      if (diff.inHours >= 20 && diff.inHours <= 28 && ag.isFuturo) {
-        lista.add({
-          'icon': '⏰',
-          'text': 'Você tem um horário amanhã\n${formatarHora(ag.dataHoraInicio)} • ${ag.servicoNome ?? "Serviço"}',
-        });
-      }
-
-      if (ag.status == 'pendente' && ag.isFuturo) {
-        lista.add({
-          'icon': '📋',
-          'text': 'Agendamento pendente de confirmação\n${formatarData(ag.dataHoraInicio)} • ${ag.servicoNome ?? "Serviço"}',
-        });
-      }
-    }
-
-    return lista;
-  }
+  // DADOS ESTÁTICOS (Puro Front-End conforme o wireframe)
+  final List<Map<String, dynamic>> _notificacoesMock = [
+    {
+      'titulo': 'Lembrete de agendamento',
+      'descricao': 'Corte de cabelo com Ana Souza às 14:00',
+      'tempo': 'Hoje - 08:00',
+      'icone': Icons.access_time,
+      'corIcone': const Color(0xFF1F2937),
+    },
+    {
+      'titulo': 'Agendamento confirmado',
+      'descricao': 'Sua manicure foi confirmada para sexta',
+      'tempo': 'Ontem - 18:32',
+      'icone': Icons.check,
+      'corIcone': const Color(0xFF1F2937),
+    },
+    {
+      'titulo': 'Novo horário disponível',
+      'descricao': 'Ana Souza abriu um novo horário livre',
+      'tempo': '2 dias atrás',
+      'icone': Icons.calendar_today,
+      'corIcone': const Color(0xFF1F2937),
+    },
+    {
+      'titulo': 'Agendamento cancelado',
+      'descricao': 'Seu horário de barba foi cancelado',
+      'tempo': '3 dias atrás',
+      'icone': Icons.close,
+      'corIcone': const Color(0xFF1F2937),
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF111934),
+      backgroundColor: const Color(0xFF1F2937), // Azul marinho do cabeçalho
       body: SafeArea(
         child: Column(
           children: [
+            // CABEÇALHO (Fiel ao wireframe)
             Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               width: double.infinity,
-              height: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              color: const Color(0xFF111934),
               child: Row(
                 children: [
                   IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
                   ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Notificações',
-                        style: TextStyle(color: Colors.white, fontSize: 22),
-                      ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Notificações',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 48),
                 ],
               ),
             ),
+            
+            // CORPO BRANCO COM CANTO ARREDONDADO (60px)
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF3F3F3),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(60),
+                  ),
                 ),
-                child: _carregando
-                    ? const Center(child: CircularProgressIndicator())
-                    : _erro != null
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(_erro!, textAlign: TextAlign.center),
-                                  const SizedBox(height: 12),
-                                  ElevatedButton(onPressed: _carregar, child: const Text('Tentar novamente')),
-                                ],
-                              ),
-                            ),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: _carregar,
-                            child: notificacoes.isEmpty
-                                ? ListView(
-                                    children: const [
-                                      SizedBox(height: 80),
-                                      Center(child: Text('Nenhuma notificação no momento')),
-                                    ],
-                                  )
-                                : ListView.builder(
-                                    padding: const EdgeInsets.all(30),
-                                    itemCount: notificacoes.length,
-                                    itemBuilder: (_, i) {
-                                      final n = notificacoes[i];
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 16),
-                                        child: _buildNotificationCard(icon: n['icon']!, text: n['text']!),
-                                      );
-                                    },
-                                  ),
-                          ),
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  itemCount: _notificacoesMock.length,
+                  itemBuilder: (context, index) {
+                    final notif = _notificacoesMock[index];
+                    return _buildNotificationItem(notif);
+                  },
+                ),
               ),
             ),
           ],
@@ -155,16 +96,64 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     );
   }
 
-  Widget _buildNotificationCard({required String icon, required String text}) {
+  Widget _buildNotificationItem(Map<String, dynamic> notif) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 18)),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 14, height: 1.3))),
+          // Ícone em Container Arredondado
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              notif['icone'],
+              size: 20,
+              color: notif['corIcone'],
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Textos
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notif['titulo'],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notif['descricao'],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  notif['tempo'],
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import '../utils/date_utils.dart';
 import 'agendar.dart';
 import 'meus-agendamentos.dart';
 import 'perfil_cliente.dart';
+import 'notificacoes.dart'; // Certifique-se de que o nome do arquivo é este
 
 class HomeClientePage extends StatefulWidget {
   const HomeClientePage({super.key});
@@ -26,25 +27,23 @@ class _HomeClientePageState extends State<HomeClientePage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Cabeçalho Simples
+            // CABEÇALHO (Ícone de notificação removido conforme solicitado)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Olá,', style: TextStyle(color: Colors.white70, fontSize: 16)),
-                      Text(usuario.nome, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                    ],
+                  const Text('Olá,', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  Text(
+                    usuario.nome,
+                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const Icon(Icons.notifications_none, color: Colors.white, size: 28),
                 ],
               ),
             ),
             
-            // Corpo Branco com Canto Arredondado (60px)
+            // CORPO BRANCO COM CANTO ARREDONDADO (60px)
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -59,7 +58,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
                     children: [
                       const SizedBox(height: 10),
                       
-                      // BARRA DE PESQUISA (Conforme wireframe)
+                      // BARRA DE PESQUISA
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
@@ -73,6 +72,32 @@ class _HomeClientePageState extends State<HomeClientePage> {
                             hintText: 'Buscar serviço ou profissional',
                             hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
                             border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+
+                      // BOTÃO AGENDAR (Novo)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AgendarPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.calendar_today, color: Colors.white),
+                          label: const Text(
+                            'Agendar agora',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
                           ),
                         ),
                       ),
@@ -114,6 +139,7 @@ class _HomeClientePageState extends State<HomeClientePage> {
         onTap: (index) {
           setState(() => _selectedIndex = index);
           if (index == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const MeusAgendamentosPage()));
+          if (index == 2) Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificacoesPage())); // LIGAÇÃO CORRIGIDA
           if (index == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => PerfilPage(nome: usuario.nome, telefone: usuario.telefone ?? '')));
         },
         items: const [

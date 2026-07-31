@@ -16,6 +16,10 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
   final enderecoController = TextEditingController();
   final telefoneController = TextEditingController();
 
+  List<String> _diasSelecionados = [];
+  TimeOfDay? _horaAbertura;
+  TimeOfDay? _horaFechamento;
+
   bool _carregando = false;
 
   Future<void> _continuar() async {
@@ -94,7 +98,127 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                       _itemCampo('Telefone', '(49) 90000-0000', telefoneController, keyboard: TextInputType.phone),
                       
                       const SizedBox(height: 40),
-                      
+
+                      // Dias de Funcionamento
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Dias de Funcionamento',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8.0,
+                            children: [ 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom' ].map((dia) {
+                              final isSelected = _diasSelecionados.contains(dia);
+                              return ChoiceChip(
+                                label: Text(dia),
+                                selected: isSelected,
+                                selectedColor: const Color(0xFF2563EB),
+                                labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1F2937)),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      _diasSelecionados.add(dia);
+                                    } else {
+                                      _diasSelecionados.remove(dia);
+                                    }
+                                  });
+                                },
+                                backgroundColor: const Color(0xFFF9FAFB),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE5E7EB))),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Horário de Funcionamento
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Horário de Funcionamento',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final TimeOfDay? picked = await showTimePicker(
+                                      context: context,
+                                      initialTime: _horaAbertura ?? TimeOfDay.now(),
+                                    );
+                                    if (picked != null && picked != _horaAbertura) {
+                                      setState(() {
+                                        _horaAbertura = picked;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(15),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: const Color(0xFFF9FAFB),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.access_time, color: Color(0xFF1F2937)),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          _horaAbertura?.format(context) ?? 'Abertura',
+                                          style: const TextStyle(color: Color(0xFF1F2937)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final TimeOfDay? picked = await showTimePicker(
+                                      context: context,
+                                      initialTime: _horaFechamento ?? TimeOfDay.now(),
+                                    );
+                                    if (picked != null && picked != _horaFechamento) {
+                                      setState(() {
+                                        _horaFechamento = picked;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(15),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: const Color(0xFFF9FAFB),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.access_time, color: Color(0xFF1F2937)),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          _horaFechamento?.format(context) ?? 'Fechamento',
+                                          style: const TextStyle(color: Color(0xFF1F2937)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+
                       SizedBox(
                         width: double.infinity,
                         height: 52,
