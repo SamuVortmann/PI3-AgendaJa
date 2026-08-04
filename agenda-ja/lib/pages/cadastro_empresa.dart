@@ -91,11 +91,29 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                       // CAMPOS SIMPLIFICADOS PARA GARANTIR EDIÇÃO
                       _itemCampo('Nome do estabelecimento', 'Salão Bella', nomeController),
                       const SizedBox(height: 20),
-                      _itemCampo('CNPJ (opcional)', '00.000.000/0000-00', cnpjController, keyboard: TextInputType.number),
+                      _itemCampo(
+                        'CNPJ (opcional)', 
+                        '00.000.000/0000-00', 
+                        cnpjController, 
+                        keyboard: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          CnpjInputFormatter(),
+                        ],
+                      ),
                       const SizedBox(height: 20),
                       _itemCampo('Endereço', 'Rua das Flores, 123', enderecoController),
                       const SizedBox(height: 20),
-                      _itemCampo('Telefone', '(49) 90000-0000', telefoneController, keyboard: TextInputType.phone),
+                      _itemCampo(
+                        'Telefone', 
+                        '(49) 90000-0000', 
+                        telefoneController, 
+                        keyboard: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          TelefoneInputFormatter(),
+                        ],
+                      ),
                       
                       const SizedBox(height: 40),
 
@@ -245,16 +263,21 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
     );
   }
 
-  Widget _itemCampo(String label, String hint, TextEditingController controller, {TextInputType keyboard = TextInputType.text}) {
+  Widget _itemCampo(
+    String label, 
+    String hint, 
+    TextEditingController controller, 
+    {TextInputType keyboard = TextInputType.text, List<TextInputFormatter>? inputFormatters}
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937))),
         const SizedBox(height: 8),
-        // TextField sem Containers complexos para evitar bloqueio de foco
         TextField(
           controller: controller,
           keyboardType: keyboard,
+          inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
@@ -270,6 +293,78 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Formatador para CNPJ: 00.000.000/0000-00
+class CnpjInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text;
+    if (text.length > 14) return oldValue;
+
+    var selectionIndex = newValue.selection.end;
+    var usedSubstringIndex = 0;
+    final newText = StringBuffer();
+
+    if (text.length >= 3) {
+      newText.write('${text.substring(0, usedSubstringIndex = 2)}.');
+      if (newValue.selection.end >= 2) selectionIndex++;
+    }
+    if (text.length >= 6) {
+      newText.write('${text.substring(2, usedSubstringIndex = 5)}.');
+      if (newValue.selection.end >= 5) selectionIndex++;
+    }
+    if (text.length >= 9) {
+      newText.write('${text.substring(5, usedSubstringIndex = 8)}/');
+      if (newValue.selection.end >= 8) selectionIndex++;
+    }
+    if (text.length >= 13) {
+      newText.write('${text.substring(8, usedSubstringIndex = 12)}-');
+      if (newValue.selection.end >= 12) selectionIndex++;
+    }
+    if (text.length >= usedSubstringIndex) {
+      newText.write(text.substring(usedSubstringIndex));
+    }
+
+    return TextEditingValue(
+      text: newText.toString(),
+      selection: TextSelection.collapsed(offset: selectionIndex),
+    );
+  }
+}
+
+/// Formatador para Telefone: (00) 00000-0000
+class TelefoneInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text;
+    if (text.length > 11) return oldValue;
+
+    var selectionIndex = newValue.selection.end;
+    var usedSubstringIndex = 0;
+    final newText = StringBuffer();
+
+    if (text.length >= 1) {
+      newText.write('(');
+      if (newValue.selection.end >= 1) selectionIndex++;
+    }
+    if (text.length >= 3) {
+      newText.write('${text.substring(0, usedSubstringIndex = 2)}) ');
+      if (newValue.selection.end >= 2) selectionIndex += 2;
+    }
+    if (text.length >= 8) {
+      newText.write('${text.substring(2, usedSubstringIndex = 7)}-');
+      if (newValue.selection.end >= 7) selectionIndex++;
+    }
+    if (text.length >= usedSubstringIndex) {
+      newText.write(text.substring(usedSubstringIndex));
+    }
+
+    return TextEditingValue(
+      text: newText.toString(),
+      selection: TextSelection.collapsed(offset: selectionIndex),
     );
   }
 }

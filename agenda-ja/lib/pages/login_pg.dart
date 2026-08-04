@@ -4,6 +4,7 @@ import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import 'home_empresa.dart';
 import 'homecliente.dart';
+import 'cadastro.dart'; // Importação da página de cadastro
 
 class LoginPg extends StatefulWidget {
   const LoginPg({super.key});
@@ -98,7 +99,7 @@ class _LoginPgState extends State<LoginPg> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const SizedBox(height: 0),
-                                Text(
+                                const Text(
                                   'Entrar',
                                   style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                                 ),
@@ -159,7 +160,13 @@ class _LoginPgState extends State<LoginPg> {
                                 children: [
                                   const Text('Não tem uma conta? ', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.black54)),
                                   GestureDetector(
-                                    onTap: () => Navigator.pushNamed(context, '/cadastro'),
+                                    onTap: () {
+                                      // Navegação direta para a página de cadastro
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const CadastroPage()),
+                                      );
+                                    },
                                     child: const Text(
                                       'CADASTRE-SE',
                                       style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF4285F4), fontWeight: FontWeight.bold),
