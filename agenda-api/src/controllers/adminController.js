@@ -55,7 +55,7 @@ async function listarAgendamentos(req, res, next) {
 async function atualizarAgendamento(req, res, next) {
   try {
     const { id } = req.params;
-    const { status, data_hora_inicio: novaDataInicio } = req.body;
+    const { status, data_hora_inicio: novaDataInicio } = req.body || {};
 
     const agendamento = await agendamentoModel.findById(id);
     if (!agendamento) {
@@ -128,7 +128,7 @@ async function listarServicos(req, res, next) {
 
 async function criarServico(req, res, next) {
   try {
-    const { nome, descricao, duracao_minutos: duracaoMinutos, preco } = req.body;
+    const { nome, descricao, duracao_minutos: duracaoMinutos, preco } = req.body || {};
 
     if (!nome || !duracaoMinutos || preco === undefined) {
       return res.status(400).json({ erro: 'Nome, duração e preço são obrigatórios' });
@@ -148,7 +148,7 @@ async function criarServico(req, res, next) {
 
 async function atualizarServico(req, res, next) {
   try {
-    const { nome, descricao, duracao_minutos: duracaoMinutos, preco, ativo } = req.body;
+    const { nome, descricao, duracao_minutos: duracaoMinutos, preco, ativo } = req.body || {};
     const servico = await servicoModel.update(req.params.id, {
       nome,
       descricao,
@@ -194,7 +194,7 @@ async function listarProfissionais(req, res, next) {
 
 async function criarProfissional(req, res, next) {
   try {
-    const { nome, email, telefone, servico_ids: servicoIds } = req.body;
+    const { nome, email, telefone, servico_ids: servicoIds } = req.body || {};
 
     if (!nome) {
       return res.status(400).json({ erro: 'Nome é obrigatório' });
@@ -214,7 +214,7 @@ async function criarProfissional(req, res, next) {
 
 async function atualizarProfissional(req, res, next) {
   try {
-    const { servico_ids: servicoIds, ...dados } = req.body;
+    const { servico_ids: servicoIds, ...dados } = req.body || {};
     const profissional = await profissionalModel.update(req.params.id, {
       ...dados,
       servicoIds,
@@ -265,7 +265,7 @@ async function criarDisponibilidade(req, res, next) {
       dia_semana: diaSemana,
       hora_inicio: horaInicio,
       hora_fim: horaFim,
-    } = req.body;
+    } = req.body || {};
 
     if (profissionalId === undefined || diaSemana === undefined || !horaInicio || !horaFim) {
       return res.status(400).json({
@@ -287,10 +287,11 @@ async function criarDisponibilidade(req, res, next) {
 
 async function atualizarDisponibilidade(req, res, next) {
   try {
+    const body = req.body || {};
     const disponibilidade = await disponibilidadeModel.update(req.params.id, {
-      diaSemana: req.body.dia_semana,
-      horaInicio: req.body.hora_inicio,
-      horaFim: req.body.hora_fim,
+      diaSemana: body.dia_semana,
+      horaInicio: body.hora_inicio,
+      horaFim: body.hora_fim,
     });
 
     if (!disponibilidade) {

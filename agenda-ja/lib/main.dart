@@ -30,6 +30,14 @@ class MeuApp extends StatelessWidget {
       theme: agendaTheme(),
       // Definindo as rotas nomeadas
       routes: {
+        '/login': (context) => const LoginPg(),
+        '/cadastro': (context) => const CadastroPage(),
+        '/cadastro_empresa': (context) => const CadastroEmpresaPage(),
+        '/home_cliente': (context) => const HomeClientePage(),
+        '/home_empresa': (context) => const HomeEmpresaPage(),
+        '/admin_gestao': (context) => const AdminGestaoPage(),
+        '/detalhes_empresa': (context) => const AgendamentoEmpresaDetalhesPage(),
+        '/confirmacao': (context) => const ConfirmacaoAgendamentoPage(),
         'login': (context) => const LoginPg(),
         'cadastro': (context) => const CadastroPage(),
         'cadastro_empresa': (context) => const CadastroEmpresaPage(), // Adicionada

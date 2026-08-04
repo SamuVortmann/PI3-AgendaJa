@@ -229,7 +229,7 @@ class _CadastroPageState extends State<CadastroPage> {
                                   style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF6B7280)),
                                 ),
                                 GestureDetector(
-                                  onTap: () => Navigator.pushNamed(context, 'login'),
+                                  onTap: () => Navigator.pushNamed(context, '/login'),
                                   child: const Text(
                                     "Entrar",
                                     style: TextStyle(
