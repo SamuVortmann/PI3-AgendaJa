@@ -16,7 +16,7 @@ function gerarToken(usuario) {
 
 async function register(req, res, next) {
   try {
-    const { nome, email, senha, telefone, perfil } = req.body;
+    const { nome, email, senha, telefone, perfil } = req.body || {};
 
     if (!nome || !email || !senha) {
       return res
@@ -56,7 +56,7 @@ async function register(req, res, next) {
 
 async function login(req, res, next) {
   try {
-    const { email, senha } = req.body;
+    const { email, senha } = req.body || {};
 
     if (!email || !senha) {
       return res
@@ -91,7 +91,7 @@ async function login(req, res, next) {
 
 async function me(req, res, next) {
   try {
-    res.json(req.usuario);
+    res.json({ usuario: req.usuario });
   } catch (err) {
     next(err);
   }

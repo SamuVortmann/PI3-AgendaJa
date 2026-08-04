@@ -8,7 +8,7 @@ const DUAS_HORAS_MS = 2 * 60 * 60 * 1000;
 async function criar(req, res, next) {
   try {
     const { profissional_id: profissionalId, servico_id: servicoId, data_hora_inicio: inicio } =
-      req.body;
+      req.body || {};
 
     if (!profissionalId || !servicoId || !inicio) {
       return res.status(400).json({
