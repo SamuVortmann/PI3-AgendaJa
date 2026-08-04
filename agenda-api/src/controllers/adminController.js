@@ -4,6 +4,14 @@ const profissionalModel = require('../models/profissionalModel');
 const disponibilidadeModel = require('../models/disponibilidadeModel');
 const whatsappService = require('../services/whatsappService');
 
+function empresaDoGestor(req) {
+  return req.usuario.empresa_id || null;
+}
+
+function empresaParaCriacao(req) {
+  return empresaDoGestor(req) || Number(req.body?.empresa_id) || null;
+}
+
 function formatLocalDate(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -45,7 +53,12 @@ async function listarAgendamentos(req, res, next) {
     const { dataInicio, dataFim } = parsePeriodo(req.query);
     const { status } = req.query;
 
-    const agendamentos = await agendamentoModel.findAll({ dataInicio, dataFim, status });
+    const agendamentos = await agendamentoModel.findAll({
+      dataInicio,
+      dataFim,
+      status,
+      empresaId: empresaDoGestor(req),
+    });
     res.json(agendamentos);
   } catch (err) {
     next(err);
@@ -60,6 +73,10 @@ async function atualizarAgendamento(req, res, next) {
     const agendamento = await agendamentoModel.findById(id);
     if (!agendamento) {
       return res.status(404).json({ erro: 'Agendamento não encontrado' });
+    }
+    const empresaId = empresaDoGestor(req);
+    if (empresaId && Number(agendamento.empresa_id) !== Number(empresaId)) {
+      return res.status(404).json({ erro: 'Agendamento nao encontrado' });
     }
 
     if (novaDataInicio) {
@@ -106,7 +123,7 @@ async function atualizarAgendamento(req, res, next) {
 
 async function dashboard(req, res, next) {
   try {
-    const totais = await agendamentoModel.contarPorPeriodo();
+    const totais = await agendamentoModel.contarPorPeriodo(empresaDoGestor(req));
     res.json({
       agendamentos_hoje: Number(totais.hoje),
       agendamentos_semana: Number(totais.semana),
@@ -119,7 +136,7 @@ async function dashboard(req, res, next) {
 
 async function listarServicos(req, res, next) {
   try {
-    const servicos = await servicoModel.findAll();
+    const servicos = await servicoModel.findAll(empresaDoGestor(req));
     res.json(servicos);
   } catch (err) {
     next(err);
@@ -134,7 +151,13 @@ async function criarServico(req, res, next) {
       return res.status(400).json({ erro: 'Nome, duração e preço são obrigatórios' });
     }
 
+    const empresaId = empresaParaCriacao(req);
+    if (!empresaId) {
+      return res.status(400).json({ erro: 'empresa_id e obrigatorio' });
+    }
+
     const servico = await servicoModel.create({
+      empresaId,
       nome,
       descricao,
       duracaoMinutos,
@@ -149,7 +172,7 @@ async function criarServico(req, res, next) {
 async function atualizarServico(req, res, next) {
   try {
     const { nome, descricao, duracao_minutos: duracaoMinutos, preco, ativo } = req.body || {};
-    const servico = await servicoModel.update(req.params.id, {
+    const servico = await servicoModel.update(req.params.id, empresaDoGestor(req), {
       nome,
       descricao,
       duracaoMinutos,
@@ -167,7 +190,7 @@ async function atualizarServico(req, res, next) {
 
 async function excluirServico(req, res, next) {
   try {
-    const servico = await servicoModel.remove(req.params.id);
+    const servico = await servicoModel.remove(req.params.id, empresaDoGestor(req));
     if (!servico) {
       return res.status(404).json({ erro: 'Serviço não encontrado' });
     }
@@ -179,7 +202,7 @@ async function excluirServico(req, res, next) {
 
 async function listarProfissionais(req, res, next) {
   try {
-    const profissionais = await profissionalModel.findAll();
+    const profissionais = await profissionalModel.findAll(empresaDoGestor(req));
     const comServicos = await Promise.all(
       profissionais.map(async (p) => ({
         ...p,
@@ -199,8 +222,13 @@ async function criarProfissional(req, res, next) {
     if (!nome) {
       return res.status(400).json({ erro: 'Nome é obrigatório' });
     }
+    const empresaId = empresaParaCriacao(req);
+    if (!empresaId) {
+      return res.status(400).json({ erro: 'empresa_id e obrigatorio' });
+    }
 
     const profissional = await profissionalModel.create({
+      empresaId,
       nome,
       email,
       telefone,
@@ -215,7 +243,7 @@ async function criarProfissional(req, res, next) {
 async function atualizarProfissional(req, res, next) {
   try {
     const { servico_ids: servicoIds, ...dados } = req.body || {};
-    const profissional = await profissionalModel.update(req.params.id, {
+    const profissional = await profissionalModel.update(req.params.id, empresaDoGestor(req), {
       ...dados,
       servicoIds,
     });
@@ -233,7 +261,7 @@ async function atualizarProfissional(req, res, next) {
 
 async function excluirProfissional(req, res, next) {
   try {
-    const profissional = await profissionalModel.remove(req.params.id);
+    const profissional = await profissionalModel.remove(req.params.id, empresaDoGestor(req));
     if (!profissional) {
       return res.status(404).json({ erro: 'Profissional não encontrado' });
     }
@@ -249,6 +277,11 @@ async function listarDisponibilidades(req, res, next) {
 
     if (!profissionalId) {
       return res.status(400).json({ erro: 'profissional_id é obrigatório' });
+    }
+    const profissional = await profissionalModel.findById(profissionalId);
+    const empresaId = empresaDoGestor(req);
+    if (!profissional || (empresaId && Number(profissional.empresa_id) !== Number(empresaId))) {
+      return res.status(404).json({ erro: 'Profissional nao encontrado' });
     }
 
     const disponibilidades = await disponibilidadeModel.findByProfissional(profissionalId);
@@ -272,6 +305,11 @@ async function criarDisponibilidade(req, res, next) {
         erro: 'profissional_id, dia_semana, hora_inicio e hora_fim são obrigatórios',
       });
     }
+    const profissional = await profissionalModel.findById(profissionalId);
+    const empresaId = empresaDoGestor(req);
+    if (!profissional || (empresaId && Number(profissional.empresa_id) !== Number(empresaId))) {
+      return res.status(404).json({ erro: 'Profissional nao encontrado' });
+    }
 
     const disponibilidade = await disponibilidadeModel.create({
       profissionalId,
@@ -287,6 +325,11 @@ async function criarDisponibilidade(req, res, next) {
 
 async function atualizarDisponibilidade(req, res, next) {
   try {
+    const atual = await disponibilidadeModel.findById(req.params.id);
+    const empresaId = empresaDoGestor(req);
+    if (!atual || (empresaId && Number(atual.empresa_id) !== Number(empresaId))) {
+      return res.status(404).json({ erro: 'Disponibilidade nao encontrada' });
+    }
     const body = req.body || {};
     const disponibilidade = await disponibilidadeModel.update(req.params.id, {
       diaSemana: body.dia_semana,
@@ -306,6 +349,11 @@ async function atualizarDisponibilidade(req, res, next) {
 
 async function excluirDisponibilidade(req, res, next) {
   try {
+    const atual = await disponibilidadeModel.findById(req.params.id);
+    const empresaId = empresaDoGestor(req);
+    if (!atual || (empresaId && Number(atual.empresa_id) !== Number(empresaId))) {
+      return res.status(404).json({ erro: 'Disponibilidade nao encontrada' });
+    }
     const disponibilidade = await disponibilidadeModel.remove(req.params.id);
     if (!disponibilidade) {
       return res.status(404).json({ erro: 'Disponibilidade não encontrada' });

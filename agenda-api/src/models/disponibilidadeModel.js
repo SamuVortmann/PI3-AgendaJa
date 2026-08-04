@@ -22,6 +22,18 @@ async function findByProfissionalAndDia(profissionalId, diaSemana) {
   return result.rows;
 }
 
+async function findById(id) {
+  const result = await pool.query(
+    `SELECT d.id, d.profissional_id, d.dia_semana, d.hora_inicio, d.hora_fim,
+            p.empresa_id
+     FROM disponibilidades d
+     INNER JOIN profissionais p ON p.id = d.profissional_id
+     WHERE d.id = $1`,
+    [id]
+  );
+  return result.rows[0];
+}
+
 async function create({ profissionalId, diaSemana, horaInicio, horaFim }) {
   const result = await pool.query(
     `INSERT INTO disponibilidades (profissional_id, dia_semana, hora_inicio, hora_fim)
@@ -53,4 +65,4 @@ async function remove(id) {
   return result.rows[0];
 }
 
-module.exports = { findByProfissional, findByProfissionalAndDia, create, update, remove };
+module.exports = { findByProfissional, findByProfissionalAndDia, findById, create, update, remove };

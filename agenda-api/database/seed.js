@@ -5,12 +5,23 @@ async function seed() {
   const senhaHash = await bcrypt.hash('admin123', 10);
 
   try {
-    await pool.query(
+    const adminResult = await pool.query(
       `INSERT INTO usuarios (nome, email, senha_hash, perfil)
        VALUES ($1, $2, $3, 'admin')
-       ON CONFLICT (email) DO NOTHING`,
+       ON CONFLICT (email) DO UPDATE SET nome = EXCLUDED.nome
+       RETURNING id`,
       ['Administrador', 'admin@agendaja.com', senhaHash]
     );
+    const adminId = adminResult.rows[0].id;
+
+    const empresaResult = await pool.query(
+      `INSERT INTO empresas (usuario_id, nome, cnpj, endereco, telefone)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (usuario_id) DO UPDATE SET nome = EXCLUDED.nome
+       RETURNING id`,
+      [adminId, 'Agenda Ja Demo', null, 'Rua das Flores, 123', '49999999999']
+    );
+    const empresaId = empresaResult.rows[0].id;
 
     const servicos = [
       { nome: 'Corte de cabelo', descricao: 'Corte masculino ou feminino', duracao: 45, preco: 50 },
@@ -20,14 +31,17 @@ async function seed() {
 
     const servicoIds = [];
     for (const s of servicos) {
-      const existing = await pool.query('SELECT id FROM servicos WHERE nome = $1', [s.nome]);
+      const existing = await pool.query(
+        'SELECT id FROM servicos WHERE empresa_id = $1 AND nome = $2',
+        [empresaId, s.nome]
+      );
       if (existing.rows[0]) {
         servicoIds.push(existing.rows[0].id);
       } else {
         const result = await pool.query(
-          `INSERT INTO servicos (nome, descricao, duracao_minutos, preco)
-           VALUES ($1, $2, $3, $4) RETURNING id`,
-          [s.nome, s.descricao, s.duracao, s.preco]
+          `INSERT INTO servicos (empresa_id, nome, descricao, duracao_minutos, preco)
+           VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+          [empresaId, s.nome, s.descricao, s.duracao, s.preco]
         );
         servicoIds.push(result.rows[0].id);
       }
@@ -42,13 +56,17 @@ async function seed() {
     const profIds = [];
     for (const p of profissionais) {
       let profId;
-      const existing = await pool.query('SELECT id FROM profissionais WHERE email = $1', [p.email]);
+      const existing = await pool.query(
+        'SELECT id FROM profissionais WHERE empresa_id = $1 AND email = $2',
+        [empresaId, p.email]
+      );
       if (existing.rows[0]) {
         profId = existing.rows[0].id;
       } else {
         const result = await pool.query(
-          `INSERT INTO profissionais (nome, email, telefone) VALUES ($1, $2, $3) RETURNING id`,
-          [p.nome, p.email, p.telefone]
+          `INSERT INTO profissionais (empresa_id, nome, email, telefone)
+           VALUES ($1, $2, $3, $4) RETURNING id`,
+          [empresaId, p.nome, p.email, p.telefone]
         );
         profId = result.rows[0].id;
       }

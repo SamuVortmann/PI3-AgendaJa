@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../models/agendamento.dart';
 import 'homecliente.dart';
 
 class ConfirmacaoAgendamentoPage extends StatefulWidget {
-  const ConfirmacaoAgendamentoPage({super.key});
+  final Agendamento? agendamento;
+
+  const ConfirmacaoAgendamentoPage({super.key, this.agendamento});
 
   @override
-  State<ConfirmacaoAgendamentoPage> createState() => _ConfirmacaoAgendamentoPageState();
+  State<ConfirmacaoAgendamentoPage> createState() =>
+      _ConfirmacaoAgendamentoPageState();
 }
 
-class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage> {
-  // Dados estáticos para demonstração
-  final String _servicoNome = 'Corte de cabelo';
-  final String _profissionalNome = 'Ana Souza';
-  final DateTime _dataAgendamento = DateTime(2026, 7, 30); // Exemplo: 30 de Julho de 2026
-  final String _horaAgendamento = '14:00';
+class _ConfirmacaoAgendamentoPageState
+    extends State<ConfirmacaoAgendamentoPage> {
+  Agendamento? get _agendamento => widget.agendamento;
+  String get _servicoNome => _agendamento?.servicoNome ?? 'Serviço';
+  String get _profissionalNome =>
+      _agendamento?.profissionalNome ?? 'Profissional';
+  DateTime get _dataAgendamento =>
+      _agendamento?.dataHoraInicio ?? DateTime.now();
+  String get _horaAgendamento =>
+      DateFormat('HH:mm').format(_dataAgendamento.toLocal());
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +38,21 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 10),
                   const Text(
                     'Sucesso',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -49,7 +65,10 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 40,
+                  ),
                   child: _buildSucessoView(),
                 ),
               ),
@@ -76,7 +95,11 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
         const SizedBox(height: 30),
         const Text(
           'Agendamento confirmado!',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         const SizedBox(height: 10),
         const Text(
@@ -101,16 +124,25 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4285F4),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Ver meus agendamentos', style: TextStyle(fontSize: 18)),
+            child: const Text(
+              'Ver meus agendamentos',
+              style: TextStyle(fontSize: 18),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDetalhesCard(DateTime data, String hora, {bool isSuccess = false}) {
+  Widget _buildDetalhesCard(
+    DateTime data,
+    String hora, {
+    bool isSuccess = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -135,7 +167,11 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
                 children: [
                   Text(
                     _servicoNome,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   Text(
                     'com $_profissionalNome',
@@ -163,7 +199,11 @@ class _ConfirmacaoAgendamentoPageState extends State<ConfirmacaoAgendamentoPage>
               const SizedBox(width: 10),
               Text(
                 '${DateFormat('dd/MM/yyyy').format(data)} · $hora',
-                style: const TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),

@@ -16,16 +16,18 @@ class AuthService {
     String? telefone,
     required String tipoConta, // Adicionado parâmetro
   }) async {
-    // Mapeia o tipo de conta para o perfil esperado pela API
-    final perfil = tipoConta == 'empresa' ? 'admin' : 'cliente';
+    final perfil = tipoConta == 'empresa' ? 'empresa' : 'cliente';
 
-    final data = await _api.post('/auth/register', body: {
-      'nome': nome,
-      'email': email,
-      'senha': senha,
-      'perfil': perfil, // Enviando o perfil para a API
-      if (telefone != null && telefone.isNotEmpty) 'telefone': telefone,
-    });
+    final data = await _api.post(
+      '/auth/register',
+      body: {
+        'nome': nome,
+        'email': email,
+        'senha': senha,
+        'perfil': perfil,
+        if (telefone != null && telefone.isNotEmpty) 'telefone': telefone,
+      },
+    );
 
     final token = data['token'] as String;
     final usuario = Usuario.fromJson(data['usuario'] as Map<String, dynamic>);
@@ -33,14 +35,11 @@ class AuthService {
     return usuario;
   }
 
-  Future<Usuario> login({
-    required String email,
-    required String senha,
-  }) async {
-    final data = await _api.post('/auth/login', body: {
-      'email': email,
-      'senha': senha,
-    });
+  Future<Usuario> login({required String email, required String senha}) async {
+    final data = await _api.post(
+      '/auth/login',
+      body: {'email': email, 'senha': senha},
+    );
 
     final token = data['token'] as String;
     final usuario = Usuario.fromJson(data['usuario'] as Map<String, dynamic>);

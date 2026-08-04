@@ -94,7 +94,11 @@ class DadosGlobais {
   }
 
   // Remarcar agendamento do cliente
-  static void remarcarAgendamento(String id, String novaData, String novoHorario) {
+  static void remarcarAgendamento(
+    String id,
+    String novaData,
+    String novoHorario,
+  ) {
     int index = meusAgendamentosCliente.indexWhere((ag) => ag['id'] == id);
     if (index != -1) {
       meusAgendamentosCliente[index]['data'] = novaData;
@@ -141,8 +145,8 @@ class DadosGlobais {
 
   // Atendimentos cancelados
   static List<Map<String, String>> getCancelados(String nomeCliente) {
-    return getHistoricoCliente(nomeCliente)
-        .where((ag) => ag['status']?.toLowerCase() == 'cancelado')
-        .toList();
+    return getHistoricoCliente(
+      nomeCliente,
+    ).where((ag) => ag['status']?.toLowerCase() == 'cancelado').toList();
   }
 }

@@ -7,6 +7,8 @@ class Servico {
   final int duracaoMinutos;
   final double preco;
   final bool ativo;
+  final int? empresaId;
+  final String? empresaNome;
 
   const Servico({
     required this.id,
@@ -15,6 +17,8 @@ class Servico {
     required this.duracaoMinutos,
     required this.preco,
     this.ativo = true,
+    this.empresaId,
+    this.empresaNome,
   });
 
   factory Servico.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,10 @@ class Servico {
       duracaoMinutos: parseJsonInt(json['duracao_minutos']),
       preco: parseJsonDouble(json['preco']) ?? 0,
       ativo: json['ativo'] as bool? ?? true,
+      empresaId: json['empresa_id'] != null
+          ? parseJsonInt(json['empresa_id'])
+          : null,
+      empresaNome: parseJsonString(json['empresa_nome']),
     );
   }
 }

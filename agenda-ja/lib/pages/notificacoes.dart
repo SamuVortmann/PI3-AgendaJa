@@ -54,7 +54,11 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 8),
@@ -69,19 +73,20 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                 ],
               ),
             ),
-            
+
             // CORPO BRANCO COM CANTO ARREDONDADO (60px)
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                  ),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   itemCount: _notificacoesMock.length,
                   itemBuilder: (context, index) {
                     final notif = _notificacoesMock[index];
@@ -115,11 +120,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
               color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              notif['icone'],
-              size: 20,
-              color: notif['corIcone'],
-            ),
+            child: Icon(notif['icone'], size: 20, color: notif['corIcone']),
           ),
           const SizedBox(width: 16),
           // Textos

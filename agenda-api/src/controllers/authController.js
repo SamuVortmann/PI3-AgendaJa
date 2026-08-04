@@ -32,8 +32,8 @@ async function register(req, res, next) {
 
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Permite apenas os perfis esperados
-    const perfilSeguro = perfil === 'admin' ? 'admin' : 'cliente';
+    // Contas administrativas sao criadas apenas pelo seed/operacao interna.
+    const perfilSeguro = perfil === 'empresa' ? 'empresa' : 'cliente';
 
     const usuario = await usuarioModel.create({
       nome,

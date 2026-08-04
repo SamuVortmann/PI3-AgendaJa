@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'confirmacao_agendamento.dart';
+import 'detalhes_empresa.dart';
 
 import '../models/servico.dart';
 import '../services/servico_service.dart';
@@ -49,11 +50,11 @@ class _AgendarPageState extends State<AgendarPage> {
   }
 
   void _abrirSeletorAgendamento(Servico servico) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _ModalAgendamento(servico: servico),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AgendamentoEmpresaDetalhesPage(servico: servico),
+      ),
     );
   }
 
@@ -76,13 +77,21 @@ class _AgendarPageState extends State<AgendarPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 10),
                   const Text(
                     'Escolha um serviço',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -95,7 +104,10 @@ class _AgendarPageState extends State<AgendarPage> {
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 25,
+                    vertical: 30,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -121,32 +133,41 @@ class _AgendarPageState extends State<AgendarPage> {
                       const SizedBox(height: 25),
                       const Text(
                         'Escolha um serviço',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Expanded(
                         child: _carregando
                             ? const Center(child: CircularProgressIndicator())
                             : _erro != null
-                                ? Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(_erro!, textAlign: TextAlign.center),
-                                        const SizedBox(height: 12),
-                                        ElevatedButton(onPressed: _carregar, child: const Text('Tentar novamente')),
-                                      ],
+                            ? Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(_erro!, textAlign: TextAlign.center),
+                                    const SizedBox(height: 12),
+                                    ElevatedButton(
+                                      onPressed: _carregar,
+                                      child: const Text('Tentar novamente'),
                                     ),
-                                  )
-                                : servicosFiltrados.isEmpty
-                                    ? const Center(child: Text('Nenhum serviço disponível.'))
-                                    : ListView.builder(
-                                        itemCount: servicosFiltrados.length,
-                                        itemBuilder: (context, index) {
-                                          final servico = servicosFiltrados[index];
-                                          return _buildServicoCard(servico);
-                                        },
-                                      ),
+                                  ],
+                                ),
+                              )
+                            : servicosFiltrados.isEmpty
+                            ? const Center(
+                                child: Text('Nenhum serviço disponível.'),
+                              )
+                            : ListView.builder(
+                                itemCount: servicosFiltrados.length,
+                                itemBuilder: (context, index) {
+                                  final servico = servicosFiltrados[index];
+                                  return _buildServicoCard(servico);
+                                },
+                              ),
                       ),
                     ],
                   ),
@@ -184,7 +205,11 @@ class _AgendarPageState extends State<AgendarPage> {
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.content_cut, color: Colors.black, size: 28),
+              child: const Icon(
+                Icons.content_cut,
+                color: Colors.black,
+                size: 28,
+              ),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -193,7 +218,11 @@ class _AgendarPageState extends State<AgendarPage> {
                 children: [
                   Text(
                     servico.nome,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -203,7 +232,11 @@ class _AgendarPageState extends State<AgendarPage> {
                   const SizedBox(height: 4),
                   Text(
                     'R\$ ${servico.preco.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4285F4)),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4285F4),
+                    ),
                   ),
                 ],
               ),
@@ -228,7 +261,14 @@ class _ModalAgendamentoState extends State<_ModalAgendamento> {
   String? _horaSelecionada;
 
   final List<String> _horarios = [
-    '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'
+    '09:00',
+    '10:00',
+    '11:00',
+    '13:00',
+    '14:00',
+    '15:00',
+    '16:00',
+    '17:00',
   ];
 
   @override
@@ -246,12 +286,21 @@ class _ModalAgendamentoState extends State<_ModalAgendamento> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Agendar', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+              const Text(
+                'Agendar',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('Selecione a data:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          const Text(
+            'Selecione a data:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 10),
           GestureDetector(
             onTap: () async {
@@ -271,7 +320,11 @@ class _ModalAgendamentoState extends State<_ModalAgendamento> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 20, color: Color(0xFF4285F4)),
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 20,
+                    color: Color(0xFF4285F4),
+                  ),
                   const SizedBox(width: 10),
                   Text(DateFormat('dd/MM/yyyy').format(_dataSelecionada)),
                 ],
@@ -279,7 +332,10 @@ class _ModalAgendamentoState extends State<_ModalAgendamento> {
             ),
           ),
           const SizedBox(height: 25),
-          const Text('Selecione o horário:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          const Text(
+            'Selecione o horário:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 15),
           Wrap(
             spacing: 10,
@@ -289,15 +345,26 @@ class _ModalAgendamentoState extends State<_ModalAgendamento> {
               return GestureDetector(
                 onTap: () => setState(() => _horaSelecionada = hora),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF4285F4) : Colors.grey.shade100,
+                    color: isSelected
+                        ? const Color(0xFF4285F4)
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isSelected ? const Color(0xFF4285F4) : Colors.grey.shade300),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF4285F4)
+                          : Colors.grey.shade300,
+                    ),
                   ),
                   child: Text(
                     hora,
-                    style: TextStyle(color: isSelected ? Colors.white : Colors.black),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
               );
@@ -315,14 +382,17 @@ class _ModalAgendamentoState extends State<_ModalAgendamento> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ConfirmacaoAgendamentoPage(),
+                          builder: (context) =>
+                              const ConfirmacaoAgendamentoPage(),
                         ),
                       );
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4285F4),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('Continuar', style: TextStyle(fontSize: 18)),
             ),

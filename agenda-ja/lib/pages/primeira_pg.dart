@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'cssprimeira_pg.dart';
 import 'login_pg.dart';
 import 'cadastro.dart';
+import 'cadastro_empresa.dart';
 import '../services/auth_session.dart';
 import '../services/auth_service.dart';
 import 'home_empresa.dart';
@@ -40,7 +41,12 @@ class _PaginaInicialState extends State<PaginaInicial> {
     await Future<void>.delayed(Duration.zero);
     if (!mounted) return;
 
-    if (session.usuario!.isAdmin) {
+    if (session.usuario!.isEmpresa && session.usuario!.empresaId == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const CadastroEmpresaPage()),
+      );
+    } else if (session.usuario!.isGestor) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeEmpresaPage()),
@@ -63,10 +69,7 @@ class _PaginaInicialState extends State<PaginaInicial> {
             // Spacer no topo com flex maior para empurrar o conteúdo para baixo do meio
             const Spacer(flex: 2),
 
-            Image.asset(
-              'assets/logo.png',
-              width: 250,
-            ),
+            Image.asset('assets/logo.png', width: 250),
 
             const SizedBox(height: 5),
 
@@ -90,12 +93,7 @@ class _PaginaInicialState extends State<PaginaInicial> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Cadastro',
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
+                child: const Text('Cadastro', style: TextStyle(fontSize: 18)),
               ),
             ),
 
@@ -109,9 +107,7 @@ class _PaginaInicialState extends State<PaginaInicial> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginPg(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const LoginPg()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -121,15 +117,10 @@ class _PaginaInicialState extends State<PaginaInicial> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Entrar',
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
+                child: const Text('Entrar', style: TextStyle(fontSize: 18)),
               ),
             ),
-            
+
             // Spacer no fundo com flex menor para garantir que não fique colado embaixo
             const Spacer(flex: 2),
           ],

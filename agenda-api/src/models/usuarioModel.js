@@ -2,7 +2,11 @@ const pool = require('../../config/db');
 
 async function findByEmail(email) {
   const result = await pool.query(
-    'SELECT id, nome, email, senha_hash, telefone, perfil, criado_em FROM usuarios WHERE email = $1',
+    `SELECT u.id, u.nome, u.email, u.senha_hash, u.telefone, u.perfil, u.criado_em,
+            e.id AS empresa_id, e.nome AS empresa_nome
+     FROM usuarios u
+     LEFT JOIN empresas e ON e.usuario_id = u.id
+     WHERE u.email = $1`,
     [email]
   );
   return result.rows[0];
@@ -10,7 +14,11 @@ async function findByEmail(email) {
 
 async function findById(id) {
   const result = await pool.query(
-    'SELECT id, nome, email, telefone, perfil, criado_em FROM usuarios WHERE id = $1',
+    `SELECT u.id, u.nome, u.email, u.telefone, u.perfil, u.criado_em,
+            e.id AS empresa_id, e.nome AS empresa_nome
+     FROM usuarios u
+     LEFT JOIN empresas e ON e.usuario_id = u.id
+     WHERE u.id = $1`,
     [id]
   );
   return result.rows[0];

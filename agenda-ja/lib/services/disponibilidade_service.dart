@@ -63,12 +63,16 @@ class DisponibilidadeService {
     required String horaInicio,
     required String horaFim,
   }) async {
-    final data = await _api.post('/admin/disponibilidades', auth: true, body: {
-      'profissional_id': profissionalId,
-      'dia_semana': diaSemana,
-      'hora_inicio': horaInicio,
-      'hora_fim': horaFim,
-    });
+    final data = await _api.post(
+      '/admin/disponibilidades',
+      auth: true,
+      body: {
+        'profissional_id': profissionalId,
+        'dia_semana': diaSemana,
+        'hora_inicio': horaInicio,
+        'hora_fim': horaFim,
+      },
+    );
     return DisponibilidadeSlot.fromJson(data as Map<String, dynamic>);
   }
 

@@ -30,7 +30,11 @@ class _CadastroPageState extends State<CadastroPage> {
     final senha = senhaController.text;
     final confirmarSenha = confirmarSenhaController.text;
 
-    if (nome.isEmpty || email.isEmpty || telefone.isEmpty || senha.isEmpty || confirmarSenha.isEmpty) {
+    if (nome.isEmpty ||
+        email.isEmpty ||
+        telefone.isEmpty ||
+        senha.isEmpty ||
+        confirmarSenha.isEmpty) {
       exibirMensagem('Por favor, preencha todos os campos!');
       return;
     }
@@ -59,9 +63,9 @@ class _CadastroPageState extends State<CadastroPage> {
         telefone: telefone,
         tipoConta: tipoConta,
       );
-      
+
       if (!mounted) return;
-      
+
       if (tipoConta == 'empresa') {
         // Redireciona para o cadastro de detalhes da empresa
         Navigator.pushReplacement(
@@ -86,7 +90,11 @@ class _CadastroPageState extends State<CadastroPage> {
 
   void exibirMensagem(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensagem), backgroundColor: Colors.redAccent, duration: const Duration(seconds: 3)),
+      SnackBar(
+        content: Text(mensagem),
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
@@ -104,7 +112,10 @@ class _CadastroPageState extends State<CadastroPage> {
                   children: [
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                       decoration: const BoxDecoration(
                         color: Color(0xFF1F2937),
                         borderRadius: BorderRadius.only(
@@ -115,7 +126,11 @@ class _CadastroPageState extends State<CadastroPage> {
                       child: Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                             onPressed: () => Navigator.pop(context),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -136,7 +151,9 @@ class _CadastroPageState extends State<CadastroPage> {
                     ),
                     Container(
                       width: double.infinity,
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight - 80),
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight - 80,
+                      ),
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.only(
@@ -145,7 +162,10 @@ class _CadastroPageState extends State<CadastroPage> {
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 30),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 30,
+                        ),
                         child: Column(
                           children: [
                             const Text(
@@ -157,15 +177,33 @@ class _CadastroPageState extends State<CadastroPage> {
                               ),
                             ),
                             const SizedBox(height: 30),
-                            _campo(titulo: 'Nome completo:', hint: 'seu nome completo', controller: nomeController),
+                            _campo(
+                              titulo: 'Nome completo:',
+                              hint: 'seu nome completo',
+                              controller: nomeController,
+                            ),
                             const SizedBox(height: 22),
-                            _campo(titulo: 'Email:', hint: 'seuemail@gmail.com', controller: emailController),
+                            _campo(
+                              titulo: 'Email:',
+                              hint: 'seuemail@gmail.com',
+                              controller: emailController,
+                            ),
                             const SizedBox(height: 22),
                             _campoTelefone(),
                             const SizedBox(height: 22),
-                            _campo(titulo: 'Senha:', hint: '**************', controller: senhaController, obscure: true),
+                            _campo(
+                              titulo: 'Senha:',
+                              hint: '**************',
+                              controller: senhaController,
+                              obscure: true,
+                            ),
                             const SizedBox(height: 22),
-                            _campo(titulo: 'Confirmar senha:', hint: '**************', controller: confirmarSenhaController, obscure: true),
+                            _campo(
+                              titulo: 'Confirmar senha:',
+                              hint: '**************',
+                              controller: confirmarSenhaController,
+                              obscure: true,
+                            ),
                             const SizedBox(height: 30),
                             const Align(
                               alignment: Alignment.centerLeft,
@@ -185,7 +223,8 @@ class _CadastroPageState extends State<CadastroPage> {
                               subtitle: 'Quero encontrar profissionais',
                               value: 'cliente',
                               groupValue: tipoConta,
-                              onChanged: (value) => setState(() => tipoConta = value),
+                              onChanged: (value) =>
+                                  setState(() => tipoConta = value),
                             ),
                             const SizedBox(height: 15),
                             _buildAccountTypeCard(
@@ -194,29 +233,40 @@ class _CadastroPageState extends State<CadastroPage> {
                               subtitle: 'Quero gerenciar minha agenda',
                               value: 'empresa',
                               groupValue: tipoConta,
-                              onChanged: (value) => setState(() => tipoConta = value),
+                              onChanged: (value) =>
+                                  setState(() => tipoConta = value),
                             ),
                             const SizedBox(height: 35),
                             SizedBox(
                               width: double.infinity,
                               height: 48,
                               child: ElevatedButton(
-                                onPressed: _carregando ? null : validarECadastrar,
+                                onPressed: _carregando
+                                    ? null
+                                    : validarECadastrar,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2563EB),
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                   elevation: 0,
                                 ),
                                 child: _carregando
                                     ? const SizedBox(
                                         width: 22,
                                         height: 22,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
                                       )
                                     : const Text(
                                         'Continuar',
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                               ),
                             ),
@@ -226,10 +276,14 @@ class _CadastroPageState extends State<CadastroPage> {
                               children: [
                                 const Text(
                                   'Já tem uma conta? ',
-                                  style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF6B7280)),
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Color(0xFF6B7280),
+                                  ),
                                 ),
                                 GestureDetector(
-                                  onTap: () => Navigator.pushNamed(context, '/login'),
+                                  onTap: () =>
+                                      Navigator.pushNamed(context, '/login'),
                                   child: const Text(
                                     "Entrar",
                                     style: TextStyle(
@@ -256,7 +310,12 @@ class _CadastroPageState extends State<CadastroPage> {
     );
   }
 
-  Widget _campo({required String titulo, required String hint, required TextEditingController controller, bool obscure = false}) {
+  Widget _campo({
+    required String titulo,
+    required String hint,
+    required TextEditingController controller,
+    bool obscure = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -311,7 +370,9 @@ class _CadastroPageState extends State<CadastroPage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? const Color(0xFF2563EB)
+                : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -320,12 +381,16 @@ class _CadastroPageState extends State<CadastroPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFEFF6FF) : const Color(0xFFF3F4F6),
+                color: isSelected
+                    ? const Color(0xFFEFF6FF)
+                    : const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF9CA3AF),
+                color: isSelected
+                    ? const Color(0xFF2563EB)
+                    : const Color(0xFF9CA3AF),
                 size: 28,
               ),
             ),
@@ -355,7 +420,9 @@ class _CadastroPageState extends State<CadastroPage> {
             ),
             Icon(
               Icons.check_circle,
-              color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFD1D5DB),
+              color: isSelected
+                  ? const Color(0xFF2563EB)
+                  : const Color(0xFFD1D5DB),
               size: 24,
             ),
           ],
@@ -405,21 +472,33 @@ class _CadastroPageState extends State<CadastroPage> {
 
 class TelefoneInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var numeros = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (numeros.length > 11) numeros = numeros.substring(0, 11);
 
     var textoFormatado = '';
     if (numeros.isNotEmpty) {
       textoFormatado += '(';
-      textoFormatado += numeros.substring(0, numeros.length >= 2 ? 2 : numeros.length);
+      textoFormatado += numeros.substring(
+        0,
+        numeros.length >= 2 ? 2 : numeros.length,
+      );
       if (numeros.length >= 2) textoFormatado += ')';
     }
     if (numeros.length > 2) {
-      textoFormatado += numeros.substring(2, numeros.length >= 7 ? 7 : numeros.length);
+      textoFormatado += numeros.substring(
+        2,
+        numeros.length >= 7 ? 7 : numeros.length,
+      );
     }
     if (numeros.length > 7) textoFormatado += '-${numeros.substring(7)}';
 
-    return TextEditingValue(text: textoFormatado, selection: TextSelection.collapsed(offset: textoFormatado.length));
+    return TextEditingValue(
+      text: textoFormatado,
+      selection: TextSelection.collapsed(offset: textoFormatado.length),
+    );
   }
 }

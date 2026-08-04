@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../services/api_client.dart';
+import '../services/auth_service.dart';
+import '../services/empresa_service.dart';
 import 'home_empresa.dart';
 
 class CadastroEmpresaPage extends StatefulWidget {
@@ -16,7 +19,7 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
   final enderecoController = TextEditingController();
   final telefoneController = TextEditingController();
 
-  List<String> _diasSelecionados = [];
+  final List<String> _diasSelecionados = [];
   TimeOfDay? _horaAbertura;
   TimeOfDay? _horaFechamento;
 
@@ -24,27 +27,96 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
 
   Future<void> _continuar() async {
     final nome = nomeController.text.trim();
-    if (nome.isEmpty) {
+    final endereco = enderecoController.text.trim();
+    final telefone = telefoneController.text.trim();
+    if (nome.isEmpty || endereco.isEmpty || telefone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, informe o nome do estabelecimento')),
+        const SnackBar(
+          content: Text(
+            'Informe nome, endereço e telefone do estabelecimento.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (_diasSelecionados.isEmpty ||
+        _horaAbertura == null ||
+        _horaFechamento == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione os dias e os horários de funcionamento.'),
+        ),
+      );
+      return;
+    }
+    final aberturaMinutos = _horaAbertura!.hour * 60 + _horaAbertura!.minute;
+    final fechamentoMinutos =
+        _horaFechamento!.hour * 60 + _horaFechamento!.minute;
+    if (fechamentoMinutos <= aberturaMinutos) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('O fechamento deve ser posterior à abertura.'),
+        ),
       );
       return;
     }
 
     setState(() => _carregando = true);
-    
-    // Simulação de sucesso para evitar erro de rota inexistente na API
-    // Quando você tiver a rota correta da API, basta trocar este bloco
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (mounted) {
-      setState(() => _carregando = false);
+    try {
+      const dias = {
+        'Dom': 0,
+        'Seg': 1,
+        'Ter': 2,
+        'Qua': 3,
+        'Qui': 4,
+        'Sex': 5,
+        'Sáb': 6,
+      };
+      String hora(TimeOfDay valor) =>
+          '${valor.hour.toString().padLeft(2, '0')}:${valor.minute.toString().padLeft(2, '0')}';
+      await EmpresaService.instance.salvarDadosEmpresa(
+        nome: nome,
+        cnpj: cnpjController.text.trim(),
+        endereco: endereco,
+        telefone: telefone,
+        diasFuncionamento: _diasSelecionados.map((dia) => dias[dia]!).toList(),
+        horaAbertura: hora(_horaAbertura!),
+        horaFechamento: hora(_horaFechamento!),
+      );
+      await AuthService.instance.me();
+      if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const HomeEmpresaPage()),
         (route) => false,
       );
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.redAccent),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível salvar a empresa.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _carregando = false);
     }
+  }
+
+  @override
+  void dispose() {
+    nomeController.dispose();
+    cnpjController.dispose();
+    enderecoController.dispose();
+    telefoneController.dispose();
+    super.dispose();
   }
 
   @override
@@ -60,12 +132,20 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Text(
                     'Cadastro de Empresa',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -79,22 +159,33 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   child: Column(
                     children: [
                       const Text(
                         'Conte sobre seu negócio',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
                       ),
                       const SizedBox(height: 32),
-                      
+
                       // CAMPOS SIMPLIFICADOS PARA GARANTIR EDIÇÃO
-                      _itemCampo('Nome do estabelecimento', 'Salão Bella', nomeController),
+                      _itemCampo(
+                        'Nome do estabelecimento',
+                        'Salão Bella',
+                        nomeController,
+                      ),
                       const SizedBox(height: 20),
                       _itemCampo(
-                        'CNPJ (opcional)', 
-                        '00.000.000/0000-00', 
-                        cnpjController, 
+                        'CNPJ (opcional)',
+                        '00.000.000/0000-00',
+                        cnpjController,
                         keyboard: TextInputType.number,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
@@ -102,19 +193,23 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      _itemCampo('Endereço', 'Rua das Flores, 123', enderecoController),
+                      _itemCampo(
+                        'Endereço',
+                        'Rua das Flores, 123',
+                        enderecoController,
+                      ),
                       const SizedBox(height: 20),
                       _itemCampo(
-                        'Telefone', 
-                        '(49) 90000-0000', 
-                        telefoneController, 
+                        'Telefone',
+                        '(49) 90000-0000',
+                        telefoneController,
                         keyboard: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           TelefoneInputFormatter(),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 40),
 
                       // Dias de Funcionamento
@@ -123,31 +218,57 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                         children: [
                           const Text(
                             'Dias de Funcionamento',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1F2937),
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 8.0,
-                            children: [ 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom' ].map((dia) {
-                              final isSelected = _diasSelecionados.contains(dia);
-                              return ChoiceChip(
-                                label: Text(dia),
-                                selected: isSelected,
-                                selectedColor: const Color(0xFF2563EB),
-                                labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFF1F2937)),
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      _diasSelecionados.add(dia);
-                                    } else {
-                                      _diasSelecionados.remove(dia);
-                                    }
-                                  });
-                                },
-                                backgroundColor: const Color(0xFFF9FAFB),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE5E7EB))),
-                              );
-                            }).toList(),
+                            children:
+                                [
+                                  'Seg',
+                                  'Ter',
+                                  'Qua',
+                                  'Qui',
+                                  'Sex',
+                                  'Sáb',
+                                  'Dom',
+                                ].map((dia) {
+                                  final isSelected = _diasSelecionados.contains(
+                                    dia,
+                                  );
+                                  return ChoiceChip(
+                                    label: Text(dia),
+                                    selected: isSelected,
+                                    selectedColor: const Color(0xFF2563EB),
+                                    labelStyle: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : const Color(0xFF1F2937),
+                                    ),
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          _diasSelecionados.add(dia);
+                                        } else {
+                                          _diasSelecionados.remove(dia);
+                                        }
+                                      });
+                                    },
+                                    backgroundColor: const Color(0xFFF9FAFB),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      side: BorderSide(
+                                        color: isSelected
+                                            ? const Color(0xFF2563EB)
+                                            : const Color(0xFFE5E7EB),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
                           ),
                         ],
                       ),
@@ -159,7 +280,11 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                         children: [
                           const Text(
                             'Horário de Funcionamento',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1F2937),
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -167,11 +292,14 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final TimeOfDay? picked = await showTimePicker(
-                                      context: context,
-                                      initialTime: _horaAbertura ?? TimeOfDay.now(),
-                                    );
-                                    if (picked != null && picked != _horaAbertura) {
+                                    final TimeOfDay? picked =
+                                        await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              _horaAbertura ?? TimeOfDay.now(),
+                                        );
+                                    if (picked != null &&
+                                        picked != _horaAbertura) {
                                       setState(() {
                                         _horaAbertura = picked;
                                       });
@@ -180,17 +308,25 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                                   child: Container(
                                     padding: const EdgeInsets.all(15),
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                                      border: Border.all(
+                                        color: const Color(0xFFE5E7EB),
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                       color: const Color(0xFFF9FAFB),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.access_time, color: Color(0xFF1F2937)),
+                                        const Icon(
+                                          Icons.access_time,
+                                          color: Color(0xFF1F2937),
+                                        ),
                                         const SizedBox(width: 10),
                                         Text(
-                                          _horaAbertura?.format(context) ?? 'Abertura',
-                                          style: const TextStyle(color: Color(0xFF1F2937)),
+                                          _horaAbertura?.format(context) ??
+                                              'Abertura',
+                                          style: const TextStyle(
+                                            color: Color(0xFF1F2937),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -201,11 +337,15 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final TimeOfDay? picked = await showTimePicker(
-                                      context: context,
-                                      initialTime: _horaFechamento ?? TimeOfDay.now(),
-                                    );
-                                    if (picked != null && picked != _horaFechamento) {
+                                    final TimeOfDay? picked =
+                                        await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              _horaFechamento ??
+                                              TimeOfDay.now(),
+                                        );
+                                    if (picked != null &&
+                                        picked != _horaFechamento) {
                                       setState(() {
                                         _horaFechamento = picked;
                                       });
@@ -214,17 +354,25 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                                   child: Container(
                                     padding: const EdgeInsets.all(15),
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                                      border: Border.all(
+                                        color: const Color(0xFFE5E7EB),
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                       color: const Color(0xFFF9FAFB),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.access_time, color: Color(0xFF1F2937)),
+                                        const Icon(
+                                          Icons.access_time,
+                                          color: Color(0xFF1F2937),
+                                        ),
                                         const SizedBox(width: 10),
                                         Text(
-                                          _horaFechamento?.format(context) ?? 'Fechamento',
-                                          style: const TextStyle(color: Color(0xFF1F2937)),
+                                          _horaFechamento?.format(context) ??
+                                              'Fechamento',
+                                          style: const TextStyle(
+                                            color: Color(0xFF1F2937),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -244,12 +392,23 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
                           onPressed: _carregando ? null : _continuar,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
-                          child: _carregando 
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Continuar', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                          child: _carregando
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  'Continuar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -264,15 +423,23 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
   }
 
   Widget _itemCampo(
-    String label, 
-    String hint, 
-    TextEditingController controller, 
-    {TextInputType keyboard = TextInputType.text, List<TextInputFormatter>? inputFormatters}
-  ) {
+    String label,
+    String hint,
+    TextEditingController controller, {
+    TextInputType keyboard = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937))),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1F2937),
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -300,7 +467,10 @@ class _CadastroEmpresaPageState extends State<CadastroEmpresaPage> {
 /// Formatador para CNPJ: 00.000.000/0000-00
 class CnpjInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final text = newValue.text;
     if (text.length > 14) return oldValue;
 
@@ -338,7 +508,10 @@ class CnpjInputFormatter extends TextInputFormatter {
 /// Formatador para Telefone: (00) 00000-0000
 class TelefoneInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final text = newValue.text;
     if (text.length > 11) return oldValue;
 

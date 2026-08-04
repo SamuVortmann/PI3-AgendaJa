@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import 'home_empresa.dart';
 import 'homecliente.dart';
 import 'cadastro.dart'; // Importação da página de cadastro
+import 'cadastro_empresa.dart';
 
 class LoginPg extends StatefulWidget {
   const LoginPg({super.key});
@@ -35,7 +36,12 @@ class _LoginPgState extends State<LoginPg> {
       );
       if (!mounted) return;
 
-      if (usuario.isAdmin) {
+      if (usuario.isEmpresa && usuario.empresaId == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const CadastroEmpresaPage()),
+        );
+      } else if (usuario.isGestor) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeEmpresaPage()),
@@ -49,7 +55,9 @@ class _LoginPgState extends State<LoginPg> {
     } on ApiException catch (e) {
       _mostrarErro(e.message);
     } catch (_) {
-      _mostrarErro('Não foi possível conectar à API. Verifique se o servidor está rodando.');
+      _mostrarErro(
+        'Não foi possível conectar à API. Verifique se o servidor está rodando.',
+      );
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
@@ -90,7 +98,11 @@ class _LoginPgState extends State<LoginPg> {
                             top: 50,
                             left: 20,
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ),
@@ -101,7 +113,11 @@ class _LoginPgState extends State<LoginPg> {
                                 const SizedBox(height: 0),
                                 const Text(
                                   'Entrar',
-                                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -114,26 +130,47 @@ class _LoginPgState extends State<LoginPg> {
                         width: double.infinity,
                         decoration: const BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(60),
+                          ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 40,
+                          ),
                           child: Column(
                             children: [
                               const Text(
                                 'Bem-vindo de volta',
-                                style: TextStyle(color: Colors.black, fontSize: 28, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               const Text(
                                 'Entre para gerenciar seus agendamentos',
-                                style: TextStyle(color: Colors.black54, fontSize: 16),
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 16,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 30),
-                              _campo('Email:', _emailController, hint: 'seuemail@gmail.com'),
+                              _campo(
+                                'Email:',
+                                _emailController,
+                                hint: 'seuemail@gmail.com',
+                              ),
                               const SizedBox(height: 20),
-                              _campo('Senha:', _senhaController, hint: '************', obscure: true),
+                              _campo(
+                                'Senha:',
+                                _senhaController,
+                                hint: '************',
+                                obscure: true,
+                              ),
                               const SizedBox(height: 35),
                               SizedBox(
                                 width: double.infinity,
@@ -143,33 +180,54 @@ class _LoginPgState extends State<LoginPg> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF4285F4),
                                     foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                   child: _carregando
                                       ? const SizedBox(
                                           width: 22,
                                           height: 22,
-                                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
                                         )
-                                      : const Text('login', style: TextStyle(fontSize: 20)),
+                                      : const Text(
+                                          'login',
+                                          style: TextStyle(fontSize: 20),
+                                        ),
                                 ),
                               ),
                               const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Não tem uma conta? ', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.black54)),
+                                  const Text(
+                                    'Não tem uma conta? ',
+                                    style: TextStyle(
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
                                   GestureDetector(
                                     onTap: () {
                                       // Navegação direta para a página de cadastro
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const CadastroPage()),
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CadastroPage(),
+                                        ),
                                       );
                                     },
                                     child: const Text(
                                       'CADASTRE-SE',
-                                      style: TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF4285F4), fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        fontStyle: FontStyle.italic,
+                                        color: Color(0xFF4285F4),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -191,7 +249,12 @@ class _LoginPgState extends State<LoginPg> {
     );
   }
 
-  Widget _campo(String titulo, TextEditingController controller, {String? hint, bool obscure = false}) {
+  Widget _campo(
+    String titulo,
+    TextEditingController controller, {
+    String? hint,
+    bool obscure = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -208,8 +271,14 @@ class _LoginPgState extends State<LoginPg> {
           child: TextField(
             controller: controller,
             obscureText: obscure,
-            keyboardType: titulo.contains("Email") ? TextInputType.emailAddress : TextInputType.text,
-            decoration: InputDecoration(hintText: hint, border: InputBorder.none, isCollapsed: true),
+            keyboardType: titulo.contains("Email")
+                ? TextInputType.emailAddress
+                : TextInputType.text,
+            decoration: InputDecoration(
+              hintText: hint,
+              border: InputBorder.none,
+              isCollapsed: true,
+            ),
             style: const TextStyle(color: Colors.black),
           ),
         ),

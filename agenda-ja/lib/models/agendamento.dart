@@ -34,6 +34,8 @@ class Agendamento {
   final String? servicoNome;
   final int? duracaoMinutos;
   final double? preco;
+  final String? empresaNome;
+  final String? empresaEndereco;
 
   const Agendamento({
     required this.id,
@@ -49,6 +51,8 @@ class Agendamento {
     this.servicoNome,
     this.duracaoMinutos,
     this.preco,
+    this.empresaNome,
+    this.empresaEndereco,
   });
 
   factory Agendamento.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,8 @@ class Agendamento {
           ? parseJsonInt(json['duracao_minutos'])
           : null,
       preco: parseJsonDouble(json['preco']),
+      empresaNome: parseJsonString(json['empresa_nome']),
+      empresaEndereco: parseJsonString(json['empresa_endereco']),
     );
   }
 

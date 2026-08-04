@@ -27,12 +27,16 @@ class ServicoService {
     required int duracaoMinutos,
     required double preco,
   }) async {
-    final data = await _api.post('/admin/servicos', auth: true, body: {
-      'nome': nome,
-      'descricao': descricao,
-      'duracao_minutos': duracaoMinutos,
-      'preco': preco,
-    });
+    final data = await _api.post(
+      '/admin/servicos',
+      auth: true,
+      body: {
+        'nome': nome,
+        'descricao': descricao,
+        'duracao_minutos': duracaoMinutos,
+        'preco': preco,
+      },
+    );
     return Servico.fromJson(data as Map<String, dynamic>);
   }
 
@@ -44,13 +48,17 @@ class ServicoService {
     double? preco,
     bool? ativo,
   }) async {
-    final data = await _api.put('/admin/servicos/$id', auth: true, body: {
-      if (nome != null) 'nome': nome,
-      if (descricao != null) 'descricao': descricao,
-      if (duracaoMinutos != null) 'duracao_minutos': duracaoMinutos,
-      if (preco != null) 'preco': preco,
-      if (ativo != null) 'ativo': ativo,
-    });
+    final data = await _api.put(
+      '/admin/servicos/$id',
+      auth: true,
+      body: {
+        if (nome != null) 'nome': nome,
+        if (descricao != null) 'descricao': descricao,
+        if (duracaoMinutos != null) 'duracao_minutos': duracaoMinutos,
+        if (preco != null) 'preco': preco,
+        if (ativo != null) 'ativo': ativo,
+      },
+    );
     return Servico.fromJson(data as Map<String, dynamic>);
   }
 

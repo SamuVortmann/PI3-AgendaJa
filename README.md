@@ -27,6 +27,9 @@ npm run db:seed
 npm run dev
 ```
 
+Para atualizar um banco criado por uma versao anterior, use `npm run db:migrate`
+antes de iniciar a API.
+
 API em `http://localhost:3000`
 
 **Admin padrão:** `admin@agendaja.com` / `admin123`

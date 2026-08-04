@@ -1,6 +1,6 @@
 -- Agenda Já - Schema do banco de dados PostgreSQL
 
-CREATE TYPE perfil_usuario AS ENUM ('cliente', 'admin');
+CREATE TYPE perfil_usuario AS ENUM ('cliente', 'empresa', 'admin');
 CREATE TYPE status_agendamento AS ENUM ('pendente', 'confirmado', 'cancelado');
 
 CREATE TABLE usuarios (
@@ -13,8 +13,24 @@ CREATE TABLE usuarios (
   criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE empresas (
+  id SERIAL PRIMARY KEY,
+  usuario_id INTEGER UNIQUE NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  nome VARCHAR(255) NOT NULL,
+  cnpj VARCHAR(18) UNIQUE,
+  endereco TEXT NOT NULL,
+  telefone VARCHAR(20) NOT NULL,
+  dias_funcionamento INTEGER[] NOT NULL DEFAULT ARRAY[1, 2, 3, 4, 5],
+  hora_abertura TIME NOT NULL DEFAULT '08:00',
+  hora_fechamento TIME NOT NULL DEFAULT '18:00',
+  ativo BOOLEAN NOT NULL DEFAULT TRUE,
+  criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK (hora_fechamento > hora_abertura)
+);
+
 CREATE TABLE servicos (
   id SERIAL PRIMARY KEY,
+  empresa_id INTEGER NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
   nome VARCHAR(255) NOT NULL,
   descricao TEXT,
   duracao_minutos INTEGER NOT NULL CHECK (duracao_minutos > 0),
@@ -24,6 +40,7 @@ CREATE TABLE servicos (
 
 CREATE TABLE profissionais (
   id SERIAL PRIMARY KEY,
+  empresa_id INTEGER NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
   nome VARCHAR(255) NOT NULL,
   email VARCHAR(255),
   telefone VARCHAR(20),
@@ -48,6 +65,7 @@ CREATE TABLE disponibilidades (
 
 CREATE TABLE agendamentos (
   id SERIAL PRIMARY KEY,
+  empresa_id INTEGER NOT NULL REFERENCES empresas(id),
   cliente_id INTEGER NOT NULL REFERENCES usuarios(id),
   profissional_id INTEGER NOT NULL REFERENCES profissionais(id),
   servico_id INTEGER NOT NULL REFERENCES servicos(id),
@@ -60,6 +78,7 @@ CREATE TABLE agendamentos (
 );
 
 CREATE INDEX idx_agendamentos_profissional ON agendamentos(profissional_id, data_hora_inicio);
+CREATE INDEX idx_agendamentos_empresa ON agendamentos(empresa_id, data_hora_inicio);
 CREATE INDEX idx_agendamentos_cliente ON agendamentos(cliente_id);
 CREATE INDEX idx_agendamentos_status ON agendamentos(status);
 CREATE INDEX idx_agendamentos_lembrete ON agendamentos(lembrete_enviado, data_hora_inicio);

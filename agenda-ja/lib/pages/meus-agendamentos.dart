@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../models/agendamento.dart';
+import '../services/agendamento_service.dart';
 import 'detalhes_agendamento.dart';
 
 class MeusAgendamentosPage extends StatefulWidget {
@@ -11,31 +15,36 @@ class MeusAgendamentosPage extends StatefulWidget {
 class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
   String _filtroAtual = 'Futuros';
   int _selectedIndex = 1;
+  List<Agendamento> _agendamentos = [];
+  bool _carregando = true;
+  String? _erro;
 
-  // DADOS ESTÁTICOS (Puro Front-End)
-  final List<Map<String, dynamic>> _agendamentosMock = [
-    {
-      'servico': 'Corte de cabelo',
-      'profissional': 'Ana Souza',
-      'data': 'Qui, 30 Jul - 14:00',
-      'status': 'confirmado',
-      'tipo': 'Futuros',
-    },
-    {
-      'servico': 'Manicure',
-      'profissional': 'Bia Lima',
-      'data': 'Sex, 31 Jul - 10:00',
-      'status': 'pendente',
-      'tipo': 'Passados',
-    },
-    {
-      'servico': 'Barba',
-      'profissional': 'Ana Souza',
-      'data': 'Sáb, 01 Ago - 09:00',
-      'status': 'cancelado',
-      'tipo': 'Cancelados',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+    try {
+      final agendamentos = await AgendamentoService.instance.meusAgendamentos();
+      if (mounted) setState(() => _agendamentos = agendamentos);
+    } catch (e) {
+      if (mounted) setState(() => _erro = e.toString());
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  bool _pertenceAoFiltro(Agendamento agendamento) {
+    if (_filtroAtual == 'Cancelados') return agendamento.isCancelado;
+    if (_filtroAtual == 'Passados') return agendamento.isPassado;
+    return agendamento.isFuturo;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,9 +70,7 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                  ),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: Column(
                   children: [
@@ -82,15 +89,7 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        children: _agendamentosMock
-                            .where((ag) => ag['tipo'] == _filtroAtual)
-                            .map((ag) => _buildAgendamentoCard(ag))
-                            .toList(),
-                      ),
-                    ),
+                    Expanded(child: _buildLista()),
                   ],
                 ),
               ),
@@ -108,11 +107,52 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
           if (index == 0) Navigator.pop(context);
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month_outlined), label: 'Agenda'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: 'Avisos'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Perfil'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Início',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            label: 'Agenda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_none),
+            label: 'Avisos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Perfil',
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLista() {
+    if (_carregando) return const Center(child: CircularProgressIndicator());
+    if (_erro != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_erro!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _carregar,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      );
+    }
+    final filtrados = _agendamentos.where(_pertenceAoFiltro).toList();
+    if (filtrados.isEmpty)
+      return const Center(child: Text('Nenhum agendamento nesta categoria.'));
+    return RefreshIndicator(
+      onRefresh: _carregar,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        children: filtrados.map(_buildAgendamentoCard).toList(),
       ),
     );
   }
@@ -138,23 +178,34 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
     );
   }
 
-  Widget _buildAgendamentoCard(Map<String, dynamic> ag) {
+  Widget _buildAgendamentoCard(Agendamento ag) {
     Color statusColor = const Color(0xFF22C55E);
-    if (ag['status'] == 'cancelado') {
+    if (ag.status == 'cancelado') {
       statusColor = const Color(0xFFEF4444);
-    } else if (ag['status'] == 'pendente') {
+    } else if (ag.status == 'pendente') {
       statusColor = const Color(0xFFF59E0B);
     }
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         // NAVEGAÇÃO DIRETA PARA A PÁGINA DE DETALHES
-        Navigator.push(
+        final alterado = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
-            builder: (_) => DetalhesAgendamentoPage(agendamento: ag),
+            builder: (_) => DetalhesAgendamentoPage(
+              agendamento: {
+                'id': ag.id,
+                'servico': ag.servicoNome ?? 'Serviço',
+                'profissional': ag.profissionalNome ?? 'Profissional',
+                'data': DateFormat(
+                  'dd/MM/yyyy HH:mm',
+                ).format(ag.dataHoraInicio.toLocal()),
+                'status': ag.status,
+              },
+            ),
           ),
         );
+        if (alterado == true) _carregar();
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -174,19 +225,29 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      ag['servico'],
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                      ag.servicoNome ?? 'Serviço',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
                     ),
                     Text(
-                      'com ${ag['profissional']}',
-                      style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                      'com ${ag.profissionalNome ?? 'Profissional'}',
+                      style: const TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
                 Container(
                   width: 60,
                   height: 24,
-                  decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ],
             ),
@@ -195,9 +256,21 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 18, color: Color(0xFF9CA3AF)),
+                const Icon(
+                  Icons.access_time,
+                  size: 18,
+                  color: Color(0xFF9CA3AF),
+                ),
                 const SizedBox(width: 8),
-                Text(ag['data'], style: const TextStyle(color: Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+                Text(
+                  DateFormat(
+                    'dd/MM/yyyy HH:mm',
+                  ).format(ag.dataHoraInicio.toLocal()),
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ],

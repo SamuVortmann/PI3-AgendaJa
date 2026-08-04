@@ -33,11 +33,15 @@ class AgendamentoService {
     required int servicoId,
     required String dataHoraInicio,
   }) async {
-    final data = await _api.post('/agendamentos', auth: true, body: {
-      'profissional_id': profissionalId,
-      'servico_id': servicoId,
-      'data_hora_inicio': dataHoraInicio,
-    });
+    final data = await _api.post(
+      '/agendamentos',
+      auth: true,
+      body: {
+        'profissional_id': profissionalId,
+        'servico_id': servicoId,
+        'data_hora_inicio': dataHoraInicio,
+      },
+    );
     return Agendamento.fromJson(data as Map<String, dynamic>);
   }
 
@@ -57,10 +61,14 @@ class AgendamentoService {
   Future<List<Agendamento>> listarAdmin({
     String? visao,
     String? status,
+    String? dataInicio,
+    String? dataFim,
   }) async {
     final params = <String>[];
     if (visao != null) params.add('visao=$visao');
     if (status != null) params.add('status=$status');
+    if (dataInicio != null) params.add('data_inicio=$dataInicio');
+    if (dataFim != null) params.add('data_fim=$dataFim');
     final query = params.isEmpty ? '' : '?${params.join('&')}';
     final data = await _api.get('/admin/agendamentos$query', auth: true);
     if (data is! List) return [];
@@ -74,10 +82,14 @@ class AgendamentoService {
     String? status,
     String? dataHoraInicio,
   }) async {
-    final data = await _api.put('/admin/agendamentos/$id', auth: true, body: {
-      if (status != null) 'status': status,
-      if (dataHoraInicio != null) 'data_hora_inicio': dataHoraInicio,
-    });
+    final data = await _api.put(
+      '/admin/agendamentos/$id',
+      auth: true,
+      body: {
+        if (status != null) 'status': status,
+        if (dataHoraInicio != null) 'data_hora_inicio': dataHoraInicio,
+      },
+    );
     return Agendamento.fromJson(data as Map<String, dynamic>);
   }
 

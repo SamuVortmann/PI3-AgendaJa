@@ -33,8 +33,11 @@ async function loadUsuario(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-  if (req.usuario.perfil !== 'admin') {
-    return res.status(403).json({ erro: 'Acesso restrito a administradores' });
+  if (!['admin', 'empresa'].includes(req.usuario.perfil)) {
+    return res.status(403).json({ erro: 'Acesso restrito a gestores da empresa' });
+  }
+  if (req.usuario.perfil === 'empresa' && !req.usuario.empresa_id) {
+    return res.status(403).json({ erro: 'Complete o cadastro da empresa para acessar esta area' });
   }
   next();
 }

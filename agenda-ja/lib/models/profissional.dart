@@ -25,7 +25,8 @@ class Profissional {
       email: json['email'] as String?,
       telefone: json['telefone'] as String?,
       ativo: json['ativo'] as bool? ?? true,
-      servicos: servicosJson
+      servicos:
+          servicosJson
               ?.map((s) => Servico.fromJson(s as Map<String, dynamic>))
               .toList() ??
           const [],

@@ -1,56 +1,70 @@
 const pool = require('../../config/db');
 
-async function findAllAtivos() {
+const SELECT_BASE = `
+  SELECT s.id, s.empresa_id, s.nome, s.descricao, s.duracao_minutos, s.preco, s.ativo,
+         e.nome AS empresa_nome
+  FROM servicos s
+  INNER JOIN empresas e ON e.id = s.empresa_id
+`;
+
+async function findAllAtivos(empresaId = null) {
+  const params = empresaId ? [empresaId] : [];
+  const empresaWhere = empresaId ? 'AND s.empresa_id = $1' : '';
   const result = await pool.query(
-    'SELECT id, nome, descricao, duracao_minutos, preco, ativo FROM servicos WHERE ativo = TRUE ORDER BY nome'
+    `${SELECT_BASE} WHERE s.ativo = TRUE AND e.ativo = TRUE ${empresaWhere} ORDER BY e.nome, s.nome`,
+    params
   );
   return result.rows;
 }
 
-async function findAll() {
+async function findAll(empresaId = null) {
+  const params = empresaId ? [empresaId] : [];
+  const where = empresaId ? 'WHERE s.empresa_id = $1' : '';
   const result = await pool.query(
-    'SELECT id, nome, descricao, duracao_minutos, preco, ativo FROM servicos ORDER BY nome'
+    `${SELECT_BASE} ${where} ORDER BY s.nome`,
+    params
   );
   return result.rows;
 }
 
 async function findById(id) {
   const result = await pool.query(
-    'SELECT id, nome, descricao, duracao_minutos, preco, ativo FROM servicos WHERE id = $1',
+    `${SELECT_BASE} WHERE s.id = $1`,
     [id]
   );
   return result.rows[0];
 }
 
-async function create({ nome, descricao, duracaoMinutos, preco }) {
+async function create({ empresaId, nome, descricao, duracaoMinutos, preco }) {
   const result = await pool.query(
-    `INSERT INTO servicos (nome, descricao, duracao_minutos, preco)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, nome, descricao, duracao_minutos, preco, ativo`,
-    [nome, descricao || null, duracaoMinutos, preco]
+    `INSERT INTO servicos (empresa_id, nome, descricao, duracao_minutos, preco)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, empresa_id, nome, descricao, duracao_minutos, preco, ativo`,
+    [empresaId, nome, descricao || null, duracaoMinutos, preco]
   );
   return result.rows[0];
 }
 
-async function update(id, { nome, descricao, duracaoMinutos, preco, ativo }) {
+async function update(id, empresaId, { nome, descricao, duracaoMinutos, preco, ativo }) {
   const result = await pool.query(
     `UPDATE servicos
-     SET nome = COALESCE($2, nome),
-         descricao = COALESCE($3, descricao),
-         duracao_minutos = COALESCE($4, duracao_minutos),
-         preco = COALESCE($5, preco),
-         ativo = COALESCE($6, ativo)
-     WHERE id = $1
-     RETURNING id, nome, descricao, duracao_minutos, preco, ativo`,
-    [id, nome, descricao, duracaoMinutos, preco, ativo]
+     SET nome = COALESCE($3, nome),
+         descricao = COALESCE($4, descricao),
+         duracao_minutos = COALESCE($5, duracao_minutos),
+         preco = COALESCE($6, preco),
+         ativo = COALESCE($7, ativo)
+     WHERE id = $1 AND ($2::integer IS NULL OR empresa_id = $2)
+     RETURNING id, empresa_id, nome, descricao, duracao_minutos, preco, ativo`,
+    [id, empresaId, nome, descricao, duracaoMinutos, preco, ativo]
   );
   return result.rows[0];
 }
 
-async function remove(id) {
+async function remove(id, empresaId = null) {
   const result = await pool.query(
-    'UPDATE servicos SET ativo = FALSE WHERE id = $1 RETURNING id',
-    [id]
+    `UPDATE servicos SET ativo = FALSE
+     WHERE id = $1 AND ($2::integer IS NULL OR empresa_id = $2) RETURNING id`,
+    [id, empresaId]
   );
   return result.rows[0];
 }

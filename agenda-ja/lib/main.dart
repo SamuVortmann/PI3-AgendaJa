@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'pages/admin_gestao_page.dart';
 import 'pages/cadastro.dart';
 import 'pages/cadastro_empresa.dart';
-import 'pages/confirmacao_agendamento.dart';
-import 'pages/detalhes_empresa.dart';
 import 'pages/home_empresa.dart';
 import 'pages/homecliente.dart';
 import 'pages/login_pg.dart';
@@ -28,26 +26,16 @@ class MeuApp extends StatelessWidget {
       title: 'Agenda Já',
       // Tema único para todas as telas, independente da fonte dos dados.
       theme: agendaTheme(),
-      // Definindo as rotas nomeadas
+      initialRoute: '/',
       routes: {
+        '/': (context) => const PaginaInicial(),
         '/login': (context) => const LoginPg(),
         '/cadastro': (context) => const CadastroPage(),
         '/cadastro_empresa': (context) => const CadastroEmpresaPage(),
         '/home_cliente': (context) => const HomeClientePage(),
         '/home_empresa': (context) => const HomeEmpresaPage(),
         '/admin_gestao': (context) => const AdminGestaoPage(),
-        '/detalhes_empresa': (context) => const AgendamentoEmpresaDetalhesPage(),
-        '/confirmacao': (context) => const ConfirmacaoAgendamentoPage(),
-        'login': (context) => const LoginPg(),
-        'cadastro': (context) => const CadastroPage(),
-        'cadastro_empresa': (context) => const CadastroEmpresaPage(), // Adicionada
-        'home_cliente': (context) => const HomeClientePage(),
-        'home_empresa': (context) => const HomeEmpresaPage(),
-        'admin_gestao': (context) => const AdminGestaoPage(),
-        'detalhes_empresa': (context) => const AgendamentoEmpresaDetalhesPage(),
-        'confirmacao': (context) => const ConfirmacaoAgendamentoPage(),
       },
-      home: const PaginaInicial(),
     );
   }
 }

@@ -1,10 +1,48 @@
 import 'package:flutter/material.dart';
 
+import '../services/agendamento_service.dart';
+import '../services/api_client.dart';
+import 'agendar.dart';
+
 class DetalhesAgendamentoPage extends StatelessWidget {
-  // Recebendo dados estáticos via construtor para facilitar o front-end
   final Map<String, dynamic>? agendamento;
 
   const DetalhesAgendamentoPage({super.key, this.agendamento});
+
+  Future<void> _cancelar(BuildContext context) async {
+    final id = agendamento?['id'] as int?;
+    if (id == null) return;
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar agendamento?'),
+        content: const Text(
+          'O cancelamento só é permitido com pelo menos 2 horas de antecedência.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cancelar agendamento'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !context.mounted) return;
+    try {
+      await AgendamentoService.instance.cancelar(id);
+      if (context.mounted) Navigator.pop(context, true);
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +63,11 @@ class DetalhesAgendamentoPage extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(width: 8),
@@ -40,23 +82,21 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // CORPO BRANCO COM CANTO ARREDONDADO (60px)
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                  ),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
                 ),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // CARD DE INFORMAÇÃO PRINCIPAL
                       Container(
                         padding: const EdgeInsets.all(20),
@@ -77,14 +117,16 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                                     Text(
                                       servico,
                                       style: const TextStyle(
-                                        fontSize: 18, 
+                                        fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF1F2937),
                                       ),
                                     ),
                                     Text(
                                       'com $profissional',
-                                      style: const TextStyle(color: Color(0xFF9CA3AF)),
+                                      style: const TextStyle(
+                                        color: Color(0xFF9CA3AF),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -93,7 +135,9 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                                   width: 60,
                                   height: 24,
                                   decoration: BoxDecoration(
-                                    color: status == 'confirmado' ? const Color(0xFF22C55E) : const Color(0xFFF59E0B),
+                                    color: status == 'confirmado'
+                                        ? const Color(0xFF22C55E)
+                                        : const Color(0xFFF59E0B),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
@@ -104,7 +148,11 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                const Icon(Icons.access_time, size: 18, color: Color(0xFF9CA3AF)),
+                                const Icon(
+                                  Icons.access_time,
+                                  size: 18,
+                                  color: Color(0xFF9CA3AF),
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   data,
@@ -116,25 +164,36 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 32),
-                            
+
                             // DETALHES ADICIONAIS COM ÍCONES
-                            _itemDetalhe(Icons.access_time, 'Duração estimada: 45 min'),
+                            _itemDetalhe(
+                              Icons.access_time,
+                              'Duração estimada: 45 min',
+                            ),
                             const SizedBox(height: 16),
-                            _itemDetalhe(Icons.phone_outlined, '(49) 90000-0000'),
+                            _itemDetalhe(
+                              Icons.phone_outlined,
+                              '(49) 90000-0000',
+                            ),
                             const SizedBox(height: 16),
                             _itemDetalhe(Icons.star_border, 'Valor: R 45,00'),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 48),
-                      
+
                       // BOTÃO REAGENDAR
                       SizedBox(
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AgendarPage(),
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),
                             shape: RoundedRectangleBorder(
@@ -143,7 +202,7 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                             elevation: 0,
                           ),
                           child: const Text(
-                            'Reagendar',
+                            'Novo agendamento',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -152,15 +211,17 @@ class DetalhesAgendamentoPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // BOTÃO CANCELAR
                       SizedBox(
                         width: double.infinity,
                         height: 52,
                         child: OutlinedButton(
-                          onPressed: () {},
+                          onPressed: status == 'cancelado'
+                              ? null
+                              : () => _cancelar(context),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFFEF4444)),
                             shape: RoundedRectangleBorder(
@@ -195,10 +256,7 @@ class DetalhesAgendamentoPage extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           texto,
-          style: const TextStyle(
-            color: Color(0xFF6B7280),
-            fontSize: 15,
-          ),
+          style: const TextStyle(color: Color(0xFF6B7280), fontSize: 15),
         ),
       ],
     );

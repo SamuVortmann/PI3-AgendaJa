@@ -1,14 +1,16 @@
 const pool = require('../../config/db');
 
 const SELECT_BASE = `
-  SELECT a.id, a.cliente_id, a.profissional_id, a.servico_id,
+  SELECT a.id, a.empresa_id, a.cliente_id, a.profissional_id, a.servico_id,
          a.data_hora_inicio, a.data_hora_fim, a.status, a.lembrete_enviado, a.criado_em,
          u.nome AS cliente_nome, u.email AS cliente_email, u.telefone AS cliente_telefone,
-         p.nome AS profissional_nome, s.nome AS servico_nome, s.duracao_minutos, s.preco
+         p.nome AS profissional_nome, s.nome AS servico_nome, s.duracao_minutos, s.preco,
+         e.nome AS empresa_nome, e.endereco AS empresa_endereco
   FROM agendamentos a
   INNER JOIN usuarios u ON u.id = a.cliente_id
   INNER JOIN profissionais p ON p.id = a.profissional_id
   INNER JOIN servicos s ON s.id = a.servico_id
+  INNER JOIN empresas e ON e.id = a.empresa_id
 `;
 
 async function findById(id) {
@@ -24,7 +26,7 @@ async function findByCliente(clienteId) {
   return result.rows;
 }
 
-async function findAll({ dataInicio, dataFim, status } = {}) {
+async function findAll({ dataInicio, dataFim, status, empresaId } = {}) {
   const conditions = [];
   const params = [];
 
@@ -39,6 +41,10 @@ async function findAll({ dataInicio, dataFim, status } = {}) {
   if (status) {
     params.push(status);
     conditions.push(`a.status = $${params.length}`);
+  }
+  if (empresaId) {
+    params.push(empresaId);
+    conditions.push(`a.empresa_id = $${params.length}`);
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -70,12 +76,12 @@ async function hasConflito(profissionalId, inicio, fim, excludeId = null) {
   return result.rows.length > 0;
 }
 
-async function create({ clienteId, profissionalId, servicoId, dataHoraInicio, dataHoraFim }) {
+async function create({ empresaId, clienteId, profissionalId, servicoId, dataHoraInicio, dataHoraFim }) {
   const result = await pool.query(
-    `INSERT INTO agendamentos (cliente_id, profissional_id, servico_id, data_hora_inicio, data_hora_fim)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING id, cliente_id, profissional_id, servico_id, data_hora_inicio, data_hora_fim, status, criado_em`,
-    [clienteId, profissionalId, servicoId, dataHoraInicio, dataHoraFim]
+    `INSERT INTO agendamentos (empresa_id, cliente_id, profissional_id, servico_id, data_hora_inicio, data_hora_fim)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id, empresa_id, cliente_id, profissional_id, servico_id, data_hora_inicio, data_hora_fim, status, criado_em`,
+    [empresaId, clienteId, profissionalId, servicoId, dataHoraInicio, dataHoraFim]
   );
   return result.rows[0];
 }
@@ -126,7 +132,7 @@ async function marcarLembreteEnviado(id) {
   await pool.query('UPDATE agendamentos SET lembrete_enviado = TRUE WHERE id = $1', [id]);
 }
 
-async function contarPorPeriodo() {
+async function contarPorPeriodo(empresaId = null) {
   const result = await pool.query(
     `SELECT
        COUNT(*) FILTER (WHERE data_hora_inicio::date = CURRENT_DATE AND status != 'cancelado') AS hoje,
@@ -140,7 +146,9 @@ async function contarPorPeriodo() {
            AND data_hora_inicio < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
            AND status != 'cancelado'
        ) AS mes
-     FROM agendamentos`
+     FROM agendamentos
+     WHERE ($1::integer IS NULL OR empresa_id = $1)`,
+    [empresaId]
   );
   return result.rows[0];
 }

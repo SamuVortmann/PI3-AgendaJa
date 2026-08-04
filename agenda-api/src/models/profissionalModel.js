@@ -2,7 +2,7 @@ const pool = require('../../config/db');
 
 async function findByServico(servicoId) {
   const result = await pool.query(
-    `SELECT p.id, p.nome, p.email, p.telefone, p.ativo
+    `SELECT p.id, p.empresa_id, p.nome, p.email, p.telefone, p.ativo
      FROM profissionais p
      INNER JOIN profissional_servico ps ON ps.profissional_id = p.id
      WHERE ps.servico_id = $1 AND p.ativo = TRUE
@@ -12,23 +12,30 @@ async function findByServico(servicoId) {
   return result.rows;
 }
 
-async function findAllAtivos() {
+async function findAllAtivos(empresaId = null) {
+  const params = empresaId ? [empresaId] : [];
+  const where = empresaId ? 'AND empresa_id = $1' : '';
   const result = await pool.query(
-    'SELECT id, nome, email, telefone, ativo FROM profissionais WHERE ativo = TRUE ORDER BY nome'
+    `SELECT id, empresa_id, nome, email, telefone, ativo
+     FROM profissionais WHERE ativo = TRUE ${where} ORDER BY nome`,
+    params
   );
   return result.rows;
 }
 
-async function findAll() {
+async function findAll(empresaId = null) {
+  const params = empresaId ? [empresaId] : [];
+  const where = empresaId ? 'WHERE empresa_id = $1' : '';
   const result = await pool.query(
-    'SELECT id, nome, email, telefone, ativo FROM profissionais ORDER BY nome'
+    `SELECT id, empresa_id, nome, email, telefone, ativo FROM profissionais ${where} ORDER BY nome`,
+    params
   );
   return result.rows;
 }
 
 async function findById(id) {
   const result = await pool.query(
-    'SELECT id, nome, email, telefone, ativo FROM profissionais WHERE id = $1',
+    'SELECT id, empresa_id, nome, email, telefone, ativo FROM profissionais WHERE id = $1',
     [id]
   );
   return result.rows[0];
@@ -45,23 +52,24 @@ async function findServicosByProfissional(profissionalId) {
   return result.rows;
 }
 
-async function create({ nome, email, telefone, servicoIds }) {
+async function create({ empresaId, nome, email, telefone, servicoIds }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const profResult = await client.query(
-      `INSERT INTO profissionais (nome, email, telefone)
-       VALUES ($1, $2, $3)
-       RETURNING id, nome, email, telefone, ativo`,
-      [nome, email || null, telefone || null]
+      `INSERT INTO profissionais (empresa_id, nome, email, telefone)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, empresa_id, nome, email, telefone, ativo`,
+      [empresaId, nome, email || null, telefone || null]
     );
     const profissional = profResult.rows[0];
 
     if (servicoIds?.length) {
       for (const servicoId of servicoIds) {
         await client.query(
-          'INSERT INTO profissional_servico (profissional_id, servico_id) VALUES ($1, $2)',
-          [profissional.id, servicoId]
+          `INSERT INTO profissional_servico (profissional_id, servico_id)
+           SELECT $1, id FROM servicos WHERE id = $2 AND empresa_id = $3`,
+          [profissional.id, servicoId, empresaId]
         );
       }
     }
@@ -76,19 +84,19 @@ async function create({ nome, email, telefone, servicoIds }) {
   }
 }
 
-async function update(id, { nome, email, telefone, ativo, servicoIds }) {
+async function update(id, empresaId, { nome, email, telefone, ativo, servicoIds }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const result = await client.query(
       `UPDATE profissionais
-       SET nome = COALESCE($2, nome),
-           email = COALESCE($3, email),
-           telefone = COALESCE($4, telefone),
-           ativo = COALESCE($5, ativo)
-       WHERE id = $1
-       RETURNING id, nome, email, telefone, ativo`,
-      [id, nome, email, telefone, ativo]
+       SET nome = COALESCE($3, nome),
+           email = COALESCE($4, email),
+           telefone = COALESCE($5, telefone),
+           ativo = COALESCE($6, ativo)
+       WHERE id = $1 AND ($2::integer IS NULL OR empresa_id = $2)
+       RETURNING id, empresa_id, nome, email, telefone, ativo`,
+      [id, empresaId, nome, email, telefone, ativo]
     );
 
     if (!result.rows[0]) {
@@ -100,8 +108,9 @@ async function update(id, { nome, email, telefone, ativo, servicoIds }) {
       await client.query('DELETE FROM profissional_servico WHERE profissional_id = $1', [id]);
       for (const servicoId of servicoIds) {
         await client.query(
-          'INSERT INTO profissional_servico (profissional_id, servico_id) VALUES ($1, $2)',
-          [id, servicoId]
+          `INSERT INTO profissional_servico (profissional_id, servico_id)
+           SELECT $1, id FROM servicos WHERE id = $2 AND ($3::integer IS NULL OR empresa_id = $3)`,
+          [id, servicoId, empresaId]
         );
       }
     }
@@ -116,10 +125,11 @@ async function update(id, { nome, email, telefone, ativo, servicoIds }) {
   }
 }
 
-async function remove(id) {
+async function remove(id, empresaId = null) {
   const result = await pool.query(
-    'UPDATE profissionais SET ativo = FALSE WHERE id = $1 RETURNING id',
-    [id]
+    `UPDATE profissionais SET ativo = FALSE
+     WHERE id = $1 AND ($2::integer IS NULL OR empresa_id = $2) RETURNING id`,
+    [id, empresaId]
   );
   return result.rows[0];
 }

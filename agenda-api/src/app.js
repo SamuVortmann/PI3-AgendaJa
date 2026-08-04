@@ -6,6 +6,7 @@ const profissionaisRoutes = require('./routes/profissionaisRoutes');
 const disponibilidadesRoutes = require('./routes/disponibilidadesRoutes');
 const agendamentosRoutes = require('./routes/agendamentosRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const empresasRoutes = require('./routes/empresasRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/empresas', empresasRoutes);
 app.use('/api/servicos', servicosRoutes);
 app.use('/api/profissionais', profissionaisRoutes);
 app.use('/api/disponibilidades', disponibilidadesRoutes);

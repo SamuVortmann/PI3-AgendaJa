@@ -13,7 +13,8 @@ class AdminGestaoPage extends StatefulWidget {
   State<AdminGestaoPage> createState() => _AdminGestaoPageState();
 }
 
-class _AdminGestaoPageState extends State<AdminGestaoPage> with SingleTickerProviderStateMixin {
+class _AdminGestaoPageState extends State<AdminGestaoPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Servico> _servicos = [];
   List<Profissional> _profissionais = [];
@@ -57,16 +58,36 @@ class _AdminGestaoPageState extends State<AdminGestaoPage> with SingleTickerProv
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: nomeCtrl, decoration: const InputDecoration(labelText: 'Nome')),
-              TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Descrição')),
-              TextField(controller: durCtrl, decoration: const InputDecoration(labelText: 'Duração (min)'), keyboardType: TextInputType.number),
-              TextField(controller: precoCtrl, decoration: const InputDecoration(labelText: 'Preço'), keyboardType: TextInputType.number),
+              TextField(
+                controller: nomeCtrl,
+                decoration: const InputDecoration(labelText: 'Nome'),
+              ),
+              TextField(
+                controller: descCtrl,
+                decoration: const InputDecoration(labelText: 'Descrição'),
+              ),
+              TextField(
+                controller: durCtrl,
+                decoration: const InputDecoration(labelText: 'Duração (min)'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: precoCtrl,
+                decoration: const InputDecoration(labelText: 'Preço'),
+                keyboardType: TextInputType.number,
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salvar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Salvar'),
+          ),
         ],
       ),
     );
@@ -98,30 +119,47 @@ class _AdminGestaoPageState extends State<AdminGestaoPage> with SingleTickerProv
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: nomeCtrl, decoration: const InputDecoration(labelText: 'Nome')),
-                TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'E-mail')),
-                TextField(controller: telCtrl, decoration: const InputDecoration(labelText: 'Telefone')),
+                TextField(
+                  controller: nomeCtrl,
+                  decoration: const InputDecoration(labelText: 'Nome'),
+                ),
+                TextField(
+                  controller: emailCtrl,
+                  decoration: const InputDecoration(labelText: 'E-mail'),
+                ),
+                TextField(
+                  controller: telCtrl,
+                  decoration: const InputDecoration(labelText: 'Telefone'),
+                ),
                 const SizedBox(height: 8),
                 const Text('Serviços:'),
-                ...servicosAtivos.map((s) => CheckboxListTile(
-                      title: Text(s.nome),
-                      value: selecionados.contains(s.id),
-                      onChanged: (v) {
-                        setModal(() {
-                          if (v == true) {
-                            selecionados.add(s.id);
-                          } else {
-                            selecionados.remove(s.id);
-                          }
-                        });
-                      },
-                    )),
+                ...servicosAtivos.map(
+                  (s) => CheckboxListTile(
+                    title: Text(s.nome),
+                    value: selecionados.contains(s.id),
+                    onChanged: (v) {
+                      setModal(() {
+                        if (v == true) {
+                          selecionados.add(s.id);
+                        } else {
+                          selecionados.remove(s.id);
+                        }
+                      });
+                    },
+                  ),
+                ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salvar')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Salvar'),
+            ),
           ],
         ),
       ),
@@ -166,20 +204,22 @@ class _AdminGestaoPageState extends State<AdminGestaoPage> with SingleTickerProv
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white54,
-          tabs: const [Tab(text: 'Serviços'), Tab(text: 'Profissionais')],
+          tabs: const [
+            Tab(text: 'Serviços'),
+            Tab(text: 'Profissionais'),
+          ],
         ),
       ),
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
           : TabBarView(
               controller: _tabController,
-              children: [
-                _listaServicos(),
-                _listaProfissionais(),
-              ],
+              children: [_listaServicos(), _listaProfissionais()],
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _tabController.index == 0 ? _dialogoServico : _dialogoProfissional,
+        onPressed: _tabController.index == 0
+            ? _dialogoServico
+            : _dialogoProfissional,
         backgroundColor: const Color(0xFF111934),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -197,8 +237,12 @@ class _AdminGestaoPageState extends State<AdminGestaoPage> with SingleTickerProv
           return Card(
             child: ListTile(
               title: Text(s.nome),
-              subtitle: Text('${s.duracaoMinutos} min • R\$ ${s.preco.toStringAsFixed(2)}'),
-              trailing: s.ativo ? const Icon(Icons.check_circle, color: Colors.green) : const Icon(Icons.cancel, color: Colors.red),
+              subtitle: Text(
+                '${s.duracaoMinutos} min • R\$ ${s.preco.toStringAsFixed(2)}',
+              ),
+              trailing: s.ativo
+                  ? const Icon(Icons.check_circle, color: Colors.green)
+                  : const Icon(Icons.cancel, color: Colors.red),
               onLongPress: () async {
                 await ServicoService.instance.excluir(s.id);
                 _carregar();
@@ -221,9 +265,13 @@ class _AdminGestaoPageState extends State<AdminGestaoPage> with SingleTickerProv
           return Card(
             child: ListTile(
               title: Text(p.nome),
-              subtitle: Text('${p.email ?? ""} ${p.telefone ?? ""}\nServiços: ${p.servicos.map((s) => s.nome).join(", ")}'),
+              subtitle: Text(
+                '${p.email ?? ""} ${p.telefone ?? ""}\nServiços: ${p.servicos.map((s) => s.nome).join(", ")}',
+              ),
               isThreeLine: true,
-              trailing: p.ativo ? const Icon(Icons.person, color: Colors.green) : const Icon(Icons.person_off, color: Colors.red),
+              trailing: p.ativo
+                  ? const Icon(Icons.person, color: Colors.green)
+                  : const Icon(Icons.person_off, color: Colors.red),
               onLongPress: () async {
                 await ProfissionalService.instance.excluir(p.id);
                 _carregar();
