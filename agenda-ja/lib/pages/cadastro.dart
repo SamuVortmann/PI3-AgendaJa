@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import 'homecliente.dart';
-import 'cadastro_empresa.dart'; // <-- Certifique-se que o nome do arquivo é este
+import 'cadastro_empresa.dart'; 
+import 'login_pg.dart'; // Importação da página de login
 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
@@ -56,6 +57,8 @@ class _CadastroPageState extends State<CadastroPage> {
 
     setState(() => _carregando = true);
     try {
+      // Nota: Se o erro "relação de empresa não existente" persistir, 
+      // verifique se o backend exige um empresa_id inicial para o tipo 'empresa'.
       await AuthService.instance.register(
         nome: nome,
         email: email,
@@ -283,7 +286,10 @@ class _CadastroPageState extends State<CadastroPage> {
                                 ),
                                 GestureDetector(
                                   onTap: () =>
-                                      Navigator.pushNamed(context, '/login'),
+                                      Navigator.pushReplacement(
+                                        context, 
+                                        MaterialPageRoute(builder: (context) => const LoginPg())
+                                      ),
                                   child: const Text(
                                     "Entrar",
                                     style: TextStyle(
@@ -455,9 +461,12 @@ class _CadastroPageState extends State<CadastroPage> {
           child: TextField(
             controller: telefoneController,
             keyboardType: TextInputType.phone,
-            inputFormatters: [TelefoneInputFormatter()],
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              TelefoneInputFormatter(),
+            ],
             decoration: const InputDecoration(
-              hintText: '(49)99999-9999',
+              hintText: '(00) 00000-0000',
               hintStyle: TextStyle(color: Color(0xFFD1D5DB)),
               border: InputBorder.none,
               isCollapsed: true,
@@ -476,29 +485,32 @@ class TelefoneInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    var numeros = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (numeros.length > 11) numeros = numeros.substring(0, 11);
+    final text = newValue.text;
+    if (text.length > 11) return oldValue;
 
-    var textoFormatado = '';
-    if (numeros.isNotEmpty) {
-      textoFormatado += '(';
-      textoFormatado += numeros.substring(
-        0,
-        numeros.length >= 2 ? 2 : numeros.length,
-      );
-      if (numeros.length >= 2) textoFormatado += ')';
+    var selectionIndex = newValue.selection.end;
+    var usedSubstringIndex = 0;
+    final newText = StringBuffer();
+
+    if (text.length >= 1) {
+      newText.write('(');
+      if (newValue.selection.end >= 1) selectionIndex++;
     }
-    if (numeros.length > 2) {
-      textoFormatado += numeros.substring(
-        2,
-        numeros.length >= 7 ? 7 : numeros.length,
-      );
+    if (text.length >= 3) {
+      newText.write('${text.substring(0, usedSubstringIndex = 2)}) ');
+      if (newValue.selection.end >= 2) selectionIndex += 2;
     }
-    if (numeros.length > 7) textoFormatado += '-${numeros.substring(7)}';
+    if (text.length >= 8) {
+      newText.write('${text.substring(2, usedSubstringIndex = 7)}-');
+      if (newValue.selection.end >= 7) selectionIndex++;
+    }
+    if (text.length >= usedSubstringIndex) {
+      newText.write(text.substring(usedSubstringIndex));
+    }
 
     return TextEditingValue(
-      text: textoFormatado,
-      selection: TextSelection.collapsed(offset: textoFormatado.length),
+      text: newText.toString(),
+      selection: TextSelection.collapsed(offset: selectionIndex),
     );
   }
 }

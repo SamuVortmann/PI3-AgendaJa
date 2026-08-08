@@ -8,112 +8,98 @@ class DetalhesClientePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // BUSCANDO DADOS REAIS DO DADOS GLOBAIS
+    // DADOS DO BANCO (SIMULADOS PELO DADOS GLOBAIS)
     final ultimo = DadosGlobais.getUltimoAtendimento(nomeCliente);
-    final proximo = DadosGlobais.getProximoAtendimento(nomeCliente);
-    final cancelados = DadosGlobais.getCancelados(nomeCliente);
+
+    // MOCKUP DE HISTÓRICO PARA O ESTILO DA IMAGEM
+    final List<Map<String, String>> historicoMock = [
+      {'servico': 'Corte de cabelo', 'data': '30 Jul 2026', 'preco': 'R\$ 45,00'},
+      {'servico': 'Escova', 'data': '15 Jul 2026', 'preco': 'R\$ 30,00'},
+      {'servico': 'Corte de cabelo', 'data': '02 Jul 2026', 'preco': 'R\$ 45,00'},
+    ];
 
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
       body: SafeArea(
         child: Column(
           children: [
+            // CABEÇALHO AZUL COM BOTÃO VOLTAR
             Container(
               width: double.infinity,
               height: 100,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               color: const Color(0xFF111934),
-              child: Stack(
+              child: Row(
                 children: [
-                  Positioned(
-                    top: 20,
-                    left: 10,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.menu,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context), 
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24)
                   ),
-                  const Center(
-                    child: Text(
-                      'A\nAgenda Já',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Detalhes',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
+            
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF3F3F3),
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(60)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 25,
-                    vertical: 30,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
                   child: Column(
                     children: [
-                      const Text(
-                        'Detalhes clientes',
-                        style: TextStyle(fontSize: 20),
+                      // AVATAR CENTRALIZADO
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey.shade100,
+                        child: Icon(Icons.person, size: 50, color: Colors.grey.shade300),
                       ),
                       const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF111934),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                      
+                      // NOME DO CLIENTE
+                      Text(
+                        nomeCliente,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF111934)),
+                      ),
+                      const SizedBox(height: 8),
+                      
+                      // INFORMAÇÕES DE CONTATO
+                      Text(
+                        '(49) 90000-1111 · maria@email.com',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                      ),
+                      const SizedBox(height: 40),
+                      
+                      // TÍTULO HISTÓRICO
+                      const Align(
+                        alignment: Alignment.centerLeft,
                         child: Text(
-                          nomeCliente,
-                          style: const TextStyle(color: Colors.white),
+                          'Histórico de agendamentos',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF111934)),
                         ),
                       ),
-                      const SizedBox(height: 35),
-
-                      // DADOS REAIS: ÚLTIMO ATENDIMENTO
-                      _buildInfoCard(
-                        titulo: 'Último atendimento :',
-                        data: ultimo?['data'] ?? 'Sem registro',
-                        horario: ultimo?['horario'] ?? '--:--',
-                        corFundo: Colors.white,
-                        corTexto: Colors.black87,
-                      ),
                       const SizedBox(height: 20),
-
-                      // DADOS REAIS: PRÓXIMO ATENDIMENTO
-                      _buildInfoCard(
-                        titulo: 'Próximo atendimento :',
-                        data: proximo?['data'] ?? 'Nenhum agendado',
-                        horario: proximo?['horario'] ?? '--:--',
-                        corFundo: Colors.white,
-                        corTexto: Colors.black87,
-                      ),
-                      const SizedBox(height: 60),
-
-                      // DADOS REAIS: CANCELADOS
-                      if (cancelados.isNotEmpty)
-                        _buildInfoCard(
-                          titulo: 'Atendimentos cancelados:',
-                          data: cancelados.first['data']!,
-                          horario: cancelados.first['horario']!,
-                          corFundo: const Color(0xFFB71C1C),
-                          corTexto: Colors.white,
-                        )
-                      else
-                        const Text(
-                          'Nenhum atendimento cancelado',
-                          style: TextStyle(color: Colors.grey),
+                      
+                      // LISTA DE HISTÓRICO ESTILIZADA
+                      ...historicoMock.map((item) => _buildHistoricoItem(
+                        servico: item['servico']!,
+                        data: item['data']!,
+                        preco: item['preco']!,
+                      )),
+                      
+                      // DADOS REAIS DO BANCO
+                      if (ultimo != null)
+                        _buildHistoricoItem(
+                          servico: 'Último Atendimento',
+                          data: ultimo['data']!,
+                          preco: 'R\$ --,--',
                         ),
                     ],
                   ),
@@ -126,32 +112,33 @@ class DetalhesClientePage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
-    required String titulo,
-    required String data,
-    required String horario,
-    required Color corFundo,
-    required Color corTexto,
-  }) {
+  Widget _buildHistoricoItem({required String servico, required String data, required String preco}) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: corFundo,
-        borderRadius: BorderRadius.circular(15),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(titulo, style: TextStyle(color: corTexto, fontSize: 16)),
-          const SizedBox(height: 8),
-          Text(
-            '→ Dia: $data',
-            style: TextStyle(color: corTexto.withOpacity(0.9)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                servico,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF111934)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                data,
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              ),
+            ],
           ),
           Text(
-            '→ Horário : $horario',
-            style: TextStyle(color: corTexto.withOpacity(0.9)),
+            preco,
+            style: const TextStyle(color: Color(0xFF3498DB), fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ],
       ),

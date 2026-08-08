@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../models/agendamento.dart';
 import '../services/agendamento_service.dart';
+// IMPORTANTE: Certifique-se de que o caminho do import está correto para o seu projeto
+import 'detalhes_clientes.dart'; 
 
 class ListaClientesPage extends StatefulWidget {
   const ListaClientesPage({super.key});
@@ -17,6 +18,14 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
   bool _carregando = true;
   String? _erro;
 
+  // DADOS ESTÁTICOS CONFORME O WIREFRAME
+  final List<Map<String, String>> _clientesEstaticos = [
+    {'nome': 'Maria Silva', 'telefone': '(49) 90000-1111'},
+    {'nome': 'João Pereira', 'telefone': '(49) 90000-2222'},
+    {'nome': 'Ana Costa', 'telefone': '(49) 90000-3333'},
+    {'nome': 'Bia Lima', 'telefone': '(49) 90000-4444'},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +38,7 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
       _erro = null;
     });
     try {
-      final agendamentos = await AgendamentoService.instance.listarAdmin(
-        visao: 'todos',
-      );
+      final agendamentos = await AgendamentoService.instance.listarAdmin(visao: 'todos');
       if (mounted) setState(() => _agendamentos = agendamentos);
     } catch (e) {
       if (mounted) setState(() => _erro = e.toString());
@@ -40,76 +47,34 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
     }
   }
 
-  List<Agendamento> get _clientes {
-    final unicos = <int, Agendamento>{};
-    for (final agendamento in _agendamentos) {
-      unicos[agendamento.clienteId] = agendamento;
-    }
+  List<dynamic> get _listaExibicao {
     final busca = _buscaController.text.trim().toLowerCase();
-    final clientes = unicos.values.where((cliente) {
-      return busca.isEmpty ||
-          (cliente.clienteNome?.toLowerCase().contains(busca) ?? false) ||
-          (cliente.clienteTelefone?.contains(busca) ?? false);
-    }).toList();
-    clientes.sort(
-      (a, b) => (a.clienteNome ?? '').compareTo(b.clienteNome ?? ''),
-    );
-    return clientes;
-  }
+    
+    // Processa clientes do banco
+    final unicos = <int, Agendamento>{};
+    for (final ag in _agendamentos) {
+      unicos[ag.clienteId] = ag;
+    }
+    
+    List<dynamic> resultado = [];
+    
+    // Adiciona estáticos filtrados
+    for (var c in _clientesEstaticos) {
+      if (busca.isEmpty || c['nome']!.toLowerCase().contains(busca)) {
+        resultado.add(c);
+      }
+    }
+    
+    // Adiciona dinâmicos filtrados
+    for (var ag in unicos.values) {
+      if (busca.isEmpty || (ag.clienteNome?.toLowerCase().contains(busca) ?? false)) {
+        if (!_clientesEstaticos.any((e) => e['nome'] == ag.clienteNome)) {
+          resultado.add(ag);
+        }
+      }
+    }
 
-  void _mostrarDetalhes(Agendamento cliente) {
-    final historico =
-        _agendamentos.where((a) => a.clienteId == cliente.clienteId).toList()
-          ..sort((a, b) => b.dataHoraInicio.compareTo(a.dataHoraInicio));
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                cliente.clienteNome ?? 'Cliente',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (cliente.clienteTelefone != null)
-                Text(cliente.clienteTelefone!),
-              const SizedBox(height: 20),
-              const Text(
-                'Histórico',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: historico.length,
-                  itemBuilder: (_, index) {
-                    final item = historico[index];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(item.servicoNome ?? 'Serviço'),
-                      subtitle: Text(
-                        DateFormat(
-                          'dd/MM/yyyy HH:mm',
-                        ).format(item.dataHoraInicio.toLocal()),
-                      ),
-                      trailing: Chip(label: Text(item.status)),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return resultado;
   }
 
   @override
@@ -122,77 +87,138 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF111934),
-        foregroundColor: Colors.white,
-        title: const Text('Clientes'),
-      ),
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          color: Color(0xFFF3F3F3),
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+      body: SafeArea(
         child: Column(
           children: [
-            TextField(
-              controller: _buscaController,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Pesquise seus clientes...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
+            // CABEÇALHO AZUL COM BOTÃO VOLTAR
+            Container(
+              width: double.infinity,
+              height: 100,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              color: const Color(0xFF111934),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context), 
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24)
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Clientes',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+            
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
+                ),
+                child: Column(
+                  children: [
+                    // BARRA DE BUSCA
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(25, 30, 25, 10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: TextField(
+                          controller: _buscaController,
+                          onChanged: (_) => setState(() {}),
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.search, color: Colors.grey),
+                            hintText: 'Buscar cliente',
+                            border: InputBorder.none,
+                            hintStyle: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    Expanded(
+                      child: _carregando && _agendamentos.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : RefreshIndicator(
+                              onRefresh: _carregar,
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                itemCount: _listaExibicao.length,
+                                itemBuilder: (context, index) {
+                                  final item = _listaExibicao[index];
+                                  String nome = '';
+                                  String telefone = '';
+                                  
+                                  if (item is Map) {
+                                    nome = item['nome']!;
+                                    telefone = item['telefone']!;
+                                  } else if (item is Agendamento) {
+                                    nome = item.clienteNome ?? 'Cliente';
+                                    telefone = item.clienteTelefone ?? 'Sem telefone';
+                                  }
+
+                                  return _buildClienteCard(nome, telefone, item);
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Expanded(child: _conteudo()),
           ],
         ),
       ),
     );
   }
 
-  Widget _conteudo() {
-    if (_carregando) return const Center(child: CircularProgressIndicator());
-    if (_erro != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_erro!, textAlign: TextAlign.center),
-            ElevatedButton(
-              onPressed: _carregar,
-              child: const Text('Tentar novamente'),
-            ),
-          ],
-        ),
-      );
-    }
-    if (_clientes.isEmpty)
-      return const Center(child: Text('Nenhum cliente encontrado.'));
-    return RefreshIndicator(
-      onRefresh: _carregar,
-      child: ListView.builder(
-        itemCount: _clientes.length,
-        itemBuilder: (_, index) {
-          final cliente = _clientes[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.person)),
-              title: Text(cliente.clienteNome ?? 'Cliente'),
-              subtitle: Text(cliente.clienteTelefone ?? 'Sem telefone'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _mostrarDetalhes(cliente),
+  Widget _buildClienteCard(String nome, String telefone, dynamic originalItem) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: ListTile(
+        onTap: () {
+          // NAVEGAÇÃO ATIVADA PARA DETALHES
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetalhesClientePage(nomeCliente: nome),
             ),
           );
         },
+        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+        leading: CircleAvatar(
+          radius: 25,
+          backgroundColor: Colors.grey.shade100,
+          child: Icon(Icons.person, color: Colors.grey.shade400),
+        ),
+        title: Text(
+          nome,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111934)),
+        ),
+        subtitle: Text(
+          telefone,
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+        ),
+        trailing: const Icon(Icons.arrow_back_ios, size: 14, color: Colors.grey),
       ),
     );
   }

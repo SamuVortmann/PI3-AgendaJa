@@ -14,25 +14,36 @@ class AuthService {
     required String email,
     required String senha,
     String? telefone,
-    required String tipoConta, // Adicionado parâmetro
+    required String tipoConta,
   }) async {
     final perfil = tipoConta == 'empresa' ? 'empresa' : 'cliente';
 
-    final data = await _api.post(
-      '/auth/register',
-      body: {
-        'nome': nome,
-        'email': email,
-        'senha': senha,
-        'perfil': perfil,
-        if (telefone != null && telefone.isNotEmpty) 'telefone': telefone,
-      },
-    );
+    try {
+      final data = await _api.post(
+        '/auth/register',
+        body: {
+          'nome': nome,
+          'email': email,
+          'senha': senha,
+          'perfil': perfil,
+          if (telefone != null && telefone.isNotEmpty) 'telefone': telefone,
+        },
+      );
 
-    final token = data['token'] as String;
-    final usuario = Usuario.fromJson(data['usuario'] as Map<String, dynamic>);
-    await _session.save(token, usuario);
-    return usuario;
+      final token = data['token'] as String;
+      final usuario = Usuario.fromJson(data['usuario'] as Map<String, dynamic>);
+      await _session.save(token, usuario);
+      return usuario;
+    } on ApiException catch (e) {
+      // Log detalhado para ajudar no diagnóstico do erro de banco de dados
+      print('--- ERRO NO REGISTRO ---');
+      print('Status Code: ${e.statusCode}');
+      print('Mensagem: ${e.message}');
+      rethrow;
+    } catch (e) {
+      print('Erro desconhecido no registro: $e');
+      rethrow;
+    }
   }
 
   Future<Usuario> login({required String email, required String senha}) async {

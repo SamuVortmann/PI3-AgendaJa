@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'pages/admin_gestao_page.dart';
+import 'pages/perfil_empresa.dart';
 import 'pages/cadastro.dart';
 import 'pages/cadastro_empresa.dart';
 import 'pages/home_empresa.dart';
@@ -34,7 +34,7 @@ class MeuApp extends StatelessWidget {
         '/cadastro_empresa': (context) => const CadastroEmpresaPage(),
         '/home_cliente': (context) => const HomeClientePage(),
         '/home_empresa': (context) => const HomeEmpresaPage(),
-        '/admin_gestao': (context) => const AdminGestaoPage(),
+        '/admin_gestao': (context) => const PerfilEmpresaPage(),
       },
     );
   }
