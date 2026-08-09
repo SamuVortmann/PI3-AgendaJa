@@ -97,8 +97,21 @@ async function me(req, res, next) {
   }
 }
 
+async function atualizarPerfil(req, res, next) {
+  try {
+    const nome = req.body?.nome?.trim();
+    const telefone = req.body?.telefone?.trim() || null;
+    if (!nome) return res.status(400).json({ erro: 'O nome é obrigatório' });
+    await usuarioModel.updateProfile(req.usuario.id, { nome, telefone });
+    res.json({ usuario: await usuarioModel.findById(req.usuario.id) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   register,
   login,
   me,
+  atualizarPerfil,
 };

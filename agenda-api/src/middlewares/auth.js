@@ -37,7 +37,7 @@ function requireAdmin(req, res, next) {
     return res.status(403).json({ erro: 'Acesso restrito a gestores da empresa' });
   }
   if (req.usuario.perfil === 'empresa' && !req.usuario.empresa_id) {
-    return res.status(403).json({ erro: 'Complete o cadastro da empresa para acessar esta area' });
+    return res.status(403).json({ erro: 'Complete o cadastro da empresa para acessar esta área' });
   }
   next();
 }

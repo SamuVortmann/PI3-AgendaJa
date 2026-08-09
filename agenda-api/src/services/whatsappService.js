@@ -23,6 +23,7 @@ function formatarTelefone(telefone) {
 
 function formatarDataHora(dataHora) {
   return new Date(dataHora).toLocaleString('pt-BR', {
+    timeZone: process.env.APP_TIMEZONE || 'America/Sao_Paulo',
     dateStyle: 'short',
     timeStyle: 'short',
   });
@@ -99,6 +100,18 @@ async function enviarConfirmacaoAgendamento(agendamento) {
   return enviarMensagem(agendamento.cliente_telefone, mensagem);
 }
 
+async function enviarNotificacaoReagendamento(agendamento) {
+  const mensagem =
+    `📅 *Agendamento reagendado!*\n\n` +
+    `Seu agendamento recebeu uma nova data e um novo horário.\n\n` +
+    `Serviço: ${agendamento.servico_nome}\n` +
+    `Profissional: ${agendamento.profissional_nome}\n` +
+    `Nova data e horário: ${formatarDataHora(agendamento.data_hora_inicio)}\n\n` +
+    `Agenda Já`;
+
+  return enviarMensagem(agendamento.cliente_telefone, mensagem);
+}
+
 async function enviarLembreteAgendamento(agendamento) {
   const mensagem =
     `🔔 *Lembrete de agendamento*\n\n` +
@@ -115,5 +128,6 @@ module.exports = {
   iniciarWhatsApp,
   enviarMensagem,
   enviarConfirmacaoAgendamento,
+  enviarNotificacaoReagendamento,
   enviarLembreteAgendamento,
 };

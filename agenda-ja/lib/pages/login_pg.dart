@@ -160,7 +160,7 @@ class _LoginPgState extends State<LoginPg> {
                               ),
                               const SizedBox(height: 30),
                               _campo(
-                                'Email:',
+                                'E-mail:',
                                 _emailController,
                                 hint: 'seuemail@gmail.com',
                               ),
@@ -194,7 +194,7 @@ class _LoginPgState extends State<LoginPg> {
                                           ),
                                         )
                                       : const Text(
-                                          'login',
+                                          'Entrar',
                                           style: TextStyle(fontSize: 20),
                                         ),
                                 ),
@@ -271,7 +271,7 @@ class _LoginPgState extends State<LoginPg> {
           child: TextField(
             controller: controller,
             obscureText: obscure,
-            keyboardType: titulo.contains("Email")
+            keyboardType: titulo.contains('E-mail')
                 ? TextInputType.emailAddress
                 : TextInputType.text,
             decoration: InputDecoration(

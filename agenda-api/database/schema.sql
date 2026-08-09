@@ -73,6 +73,7 @@ CREATE TABLE agendamentos (
   data_hora_fim TIMESTAMPTZ NOT NULL,
   status status_agendamento NOT NULL DEFAULT 'pendente',
   lembrete_enviado BOOLEAN NOT NULL DEFAULT FALSE,
+  reagendado_em TIMESTAMPTZ,
   criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CHECK (data_hora_fim > data_hora_inicio)
 );

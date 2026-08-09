@@ -139,6 +139,29 @@ class _AgendamentoEmpresaDetalhesPageState
   int _primeiroDiaMes() =>
       DateTime(_mesAtual.year, _mesAtual.month, 1).weekday % 7;
 
+  bool get _mesAtualEhOMesDeHoje {
+    final hoje = DateTime.now();
+    return _mesAtual.year == hoje.year && _mesAtual.month == hoje.month;
+  }
+
+  Future<void> _mudarMes(int deslocamento) async {
+    final novoMes = DateTime(_mesAtual.year, _mesAtual.month + deslocamento);
+    final hoje = DateTime.now();
+    final inicioMesAtual = DateTime(hoje.year, hoje.month);
+    if (novoMes.isBefore(inicioMesAtual)) return;
+
+    final ultimoDia = DateTime(novoMes.year, novoMes.month + 1, 0).day;
+    var novoDia = (_diaSelecionado ?? 1).clamp(1, ultimoDia);
+    if (novoMes.year == hoje.year && novoMes.month == hoje.month) {
+      novoDia = novoDia.clamp(hoje.day, ultimoDia);
+    }
+    setState(() {
+      _mesAtual = novoMes;
+      _diaSelecionado = novoDia;
+    });
+    await _carregarHorarios();
+  }
+
   static const _meses = [
     'Janeiro',
     'Fevereiro',
@@ -289,15 +312,9 @@ class _AgendamentoEmpresaDetalhesPageState
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       IconButton(
-                                        onPressed: () {
-                                          setState(
-                                            () => _mesAtual = DateTime(
-                                              _mesAtual.year,
-                                              _mesAtual.month - 1,
-                                            ),
-                                          );
-                                          _carregarHorarios();
-                                        },
+                                        onPressed: _mesAtualEhOMesDeHoje
+                                            ? null
+                                            : () => _mudarMes(-1),
                                         icon: const Icon(
                                           Icons.arrow_back_ios,
                                           size: 18,
@@ -322,15 +339,7 @@ class _AgendamentoEmpresaDetalhesPageState
                                         ),
                                       ),
                                       IconButton(
-                                        onPressed: () {
-                                          setState(
-                                            () => _mesAtual = DateTime(
-                                              _mesAtual.year,
-                                              _mesAtual.month + 1,
-                                            ),
-                                          );
-                                          _carregarHorarios();
-                                        },
+                                        onPressed: () => _mudarMes(1),
                                         icon: const Icon(
                                           Icons.arrow_forward_ios,
                                           size: 18,

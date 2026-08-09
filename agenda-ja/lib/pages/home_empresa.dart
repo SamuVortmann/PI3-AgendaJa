@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import 'perfil_empresa.dart';
+import '../models/agendamento.dart';
+import '../services/agendamento_service.dart';
+import '../services/auth_session.dart';
 import 'agenda_empresa.dart';
 import 'lista_clientes.dart';
-import 'notificacoes_empresa.dart'; 
+import 'notificacoes_empresa.dart';
+import 'perfil_empresa.dart';
 
 class HomeEmpresaPage extends StatefulWidget {
   const HomeEmpresaPage({super.key});
@@ -14,105 +18,126 @@ class HomeEmpresaPage extends StatefulWidget {
 
 class _HomeEmpresaPageState extends State<HomeEmpresaPage> {
   int _selectedIndex = 0;
-  final String _nomeEmpresa = 'Salão Bella';
+  DashboardTotais? _totais;
+  List<Agendamento> _agendamentosHoje = [];
+  List<Agendamento> _agendamentosSemana = [];
+  bool _carregando = true;
+  String? _erro;
 
-  // Método para abrir páginas e resetar o índice ao voltar
+  String get _nomeEmpresa {
+    final usuario = AuthSession.instance.usuario;
+    return usuario?.empresaNome ?? usuario?.nome ?? 'Empresa';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+    try {
+      final resultados = await Future.wait([
+        AgendamentoService.instance.dashboard(),
+        AgendamentoService.instance.listarAdmin(),
+        AgendamentoService.instance.listarAdmin(visao: 'semana'),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _totais = resultados[0] as DashboardTotais;
+        _agendamentosHoje = resultados[1] as List<Agendamento>;
+        _agendamentosSemana = resultados[2] as List<Agendamento>;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _erro = e.toString());
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
   Future<void> _abrir(Widget pagina) async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => pagina));
     if (mounted) {
       setState(() => _selectedIndex = 0);
+      await _carregar();
+    }
+  }
+
+  Future<void> _cancelar(Agendamento agendamento) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar agendamento?'),
+        content: Text(
+          '${agendamento.clienteNome ?? 'Cliente'} • '
+          '${DateFormat('dd/MM/yyyy HH:mm').format(agendamento.dataHoraInicio.toLocal())}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Voltar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Cancelar agendamento',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !mounted) return;
+    try {
+      await AgendamentoService.instance.atualizarAdmin(
+        agendamento.id,
+        status: 'cancelado',
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Agendamento cancelado.')));
+      await _carregar();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1F2937), // Azul marinho consistente
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // CABEÇALHO
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Olá, $_nomeEmpresa!',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.notifications_none,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                    onPressed: () {
-                      _abrir(const NotificacoesEmpresaPage());
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // CONTEÚDO BRANCO COM A BORDA DE 60px
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(60),
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Cards de Resumo
-                      Row(
-                        children: [
-                          _buildSummaryCard(
-                            Icons.calendar_today_outlined,
-                            '8',
-                            'Hoje',
-                          ),
-                          const SizedBox(width: 16),
-                          _buildSummaryCard(
-                            Icons.trending_up,
-                            '92%',
-                            'Comparecimento',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      const Text(
-                        'Agenda de hoje',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      _buildAgendamentoItem('Maria Silva', 'Corte de cabelo - 14:00', const Color(0xFF22C55E)),
-                      _buildAgendamentoItem('João Pereira', 'Barba - 15:00', const Color(0xFFF59E0B)),
-                      _buildAgendamentoItem('Ana Costa', 'Manicure - 16:30', const Color(0xFF22C55E)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+      backgroundColor: const Color(0xFF1F2937),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFF1F2937),
+        foregroundColor: Colors.white,
+        title: Text('Olá, $_nomeEmpresa!'),
+        actions: [
+          IconButton(
+            tooltip: 'Avisos',
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () => _abrir(const NotificacoesEmpresaPage()),
+          ),
+        ],
+      ),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
         ),
+        child: _conteudo(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -129,7 +154,6 @@ class _HomeEmpresaPageState extends State<HomeEmpresaPage> {
               _abrir(const ListaClientesPage());
               break;
             case 3:
-              // LIGAÇÃO PARA A PÁGINA DE PERFIL DA EMPRESA
               _abrir(const PerfilEmpresaPage());
               break;
           }
@@ -148,93 +172,142 @@ class _HomeEmpresaPageState extends State<HomeEmpresaPage> {
             label: 'Clientes',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu), // Ícone conforme o seu código original
-            label: 'Perfil',
+            icon: Icon(Icons.settings_outlined),
+            label: 'Gestão',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryCard(IconData icon, String valor, String label) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF3F4F6)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+  Widget _conteudo() {
+    if (_carregando) return const Center(child: CircularProgressIndicator());
+    if (_erro != null) {
+      return Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: const Color(0xFF2563EB), size: 24),
-            const SizedBox(height: 12),
-            Text(
-              valor,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(_erro!, textAlign: TextAlign.center),
             ),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 13, color: Colors.grey),
+            ElevatedButton(
+              onPressed: _carregar,
+              child: const Text('Tentar novamente'),
             ),
           ],
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _carregar,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+        children: [
+          Row(
+            children: [
+              _resumo(Icons.today, '${_totais?.hoje ?? 0}', 'Hoje'),
+              const SizedBox(width: 12),
+              _resumo(
+                Icons.date_range,
+                '${_totais?.semana ?? 0}',
+                'Esta semana',
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          const Text(
+            'Agenda de hoje',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          if (_agendamentosHoje.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 36),
+              child: Center(child: Text('Nenhum agendamento para hoje.')),
+            )
+          else
+            ..._agendamentosHoje.map(_agendamentoCard),
+          const SizedBox(height: 28),
+          const Text(
+            'Agenda da semana',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(_periodoSemana(), style: const TextStyle(color: Colors.black54)),
+          const SizedBox(height: 12),
+          if (_agendamentosSemana.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 28),
+              child: Center(child: Text('Nenhum agendamento nesta semana.')),
+            )
+          else
+            ..._agendamentosSemana.map(
+              (item) => _agendamentoCard(item, mostrarData: true),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _resumo(IconData icon, String valor, String titulo) {
+    return Expanded(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: const Color(0xFF2563EB)),
+              const SizedBox(height: 10),
+              Text(
+                valor,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(titulo),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildAgendamentoItem(String nome, String detalhe, Color statusColor) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFF3F4F6), width: 1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: const Icon(Icons.person, color: Color(0xFFD1D5DB)),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  nome,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1F2937)),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  detalhe,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 60,
-            height: 24,
-            decoration: BoxDecoration(
-              color: statusColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ],
+  String _periodoSemana() {
+    final hoje = DateTime.now();
+    final inicio = DateTime(
+      hoje.year,
+      hoje.month,
+      hoje.day,
+    ).subtract(Duration(days: hoje.weekday - DateTime.monday));
+    final fim = inicio.add(const Duration(days: 6));
+    return '${DateFormat('dd/MM').format(inicio)} – ${DateFormat('dd/MM/yyyy').format(fim)}';
+  }
+
+  Widget _agendamentoCard(Agendamento item, {bool mostrarData = false}) {
+    final data = item.dataHoraInicio.toLocal();
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        onTap: () =>
+            _abrir(AgendaPage(nomeEmpresa: _nomeEmpresa, initialDate: data)),
+        leading: const CircleAvatar(child: Icon(Icons.person)),
+        title: Text(item.clienteNome ?? 'Cliente'),
+        subtitle: Text(
+          '${item.servicoNome ?? 'Serviço'} • ${item.profissionalNome ?? 'Profissional'}\n'
+          '${mostrarData ? '${DateFormat('dd/MM/yyyy').format(data)} • ' : ''}'
+          '${DateFormat('HH:mm').format(data)} • ${item.statusLabel}',
+        ),
+        isThreeLine: true,
+        trailing: item.isCancelado
+            ? const Chip(label: Text('Cancelado'))
+            : IconButton(
+                tooltip: 'Cancelar agendamento',
+                onPressed: () => _cancelar(item),
+                icon: const Icon(Icons.cancel_outlined, color: Colors.red),
+              ),
       ),
     );
   }

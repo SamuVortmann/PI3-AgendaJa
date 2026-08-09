@@ -3,13 +3,14 @@ const empresaModel = require('../models/empresaModel');
 function validarDados(body, parcial = false) {
   const { nome, endereco, telefone, dias_funcionamento: dias, hora_abertura: abertura, hora_fechamento: fechamento } = body;
   if (!parcial && (!nome || !endereco || !telefone)) {
-    return 'Nome, endereco e telefone sao obrigatorios';
+    return 'Nome, endereço e telefone são obrigatórios';
   }
   if (dias !== undefined && (!Array.isArray(dias) || dias.some((dia) => !Number.isInteger(dia) || dia < 0 || dia > 6))) {
     return 'dias_funcionamento deve conter numeros de 0 a 6';
   }
+  if (Array.isArray(dias) && dias.length === 0) return 'Selecione ao menos um dia de funcionamento';
   if (abertura && fechamento && abertura >= fechamento) {
-    return 'O horario de fechamento deve ser posterior ao de abertura';
+    return 'O horário de fechamento deve ser posterior ao de abertura';
   }
   return null;
 }
@@ -25,7 +26,7 @@ async function listar(req, res, next) {
 async function buscar(req, res, next) {
   try {
     const empresa = await empresaModel.findById(req.params.id);
-    if (!empresa?.ativo) return res.status(404).json({ erro: 'Empresa nao encontrada' });
+    if (!empresa?.ativo) return res.status(404).json({ erro: 'Empresa não encontrada' });
     res.json(empresa);
   } catch (err) {
     next(err);
@@ -35,7 +36,7 @@ async function buscar(req, res, next) {
 async function minha(req, res, next) {
   try {
     const empresa = await empresaModel.findByUsuarioId(req.usuario.id);
-    if (!empresa) return res.status(404).json({ erro: 'Cadastro da empresa nao encontrado' });
+    if (!empresa) return res.status(404).json({ erro: 'Cadastro da empresa não encontrado' });
     res.json(empresa);
   } catch (err) {
     next(err);
@@ -48,7 +49,7 @@ async function criar(req, res, next) {
       return res.status(403).json({ erro: 'Apenas contas de empresa podem cadastrar uma empresa' });
     }
     const existente = await empresaModel.findByUsuarioId(req.usuario.id);
-    if (existente) return res.status(409).json({ erro: 'Esta conta ja possui uma empresa' });
+    if (existente) return res.status(409).json({ erro: 'Esta conta já possui uma empresa' });
     const erro = validarDados(req.body || {});
     if (erro) return res.status(400).json({ erro });
 
@@ -74,9 +75,17 @@ async function atualizar(req, res, next) {
     if (req.usuario.perfil !== 'empresa') {
       return res.status(403).json({ erro: 'Apenas contas de empresa podem alterar estes dados' });
     }
-    const erro = validarDados(req.body || {}, true);
-    if (erro) return res.status(400).json({ erro });
+    const atual = await empresaModel.findByUsuarioId(req.usuario.id);
+    if (!atual) return res.status(404).json({ erro: 'Cadastro da empresa não encontrado' });
     const body = req.body || {};
+    const dadosParaValidar = {
+      ...body,
+      dias_funcionamento: body.dias_funcionamento ?? atual.dias_funcionamento,
+      hora_abertura: body.hora_abertura ?? atual.hora_abertura,
+      hora_fechamento: body.hora_fechamento ?? atual.hora_fechamento,
+    };
+    const erro = validarDados(dadosParaValidar, true);
+    if (erro) return res.status(400).json({ erro });
     const empresa = await empresaModel.updateByUsuarioId(req.usuario.id, {
       nome: body.nome,
       cnpj: body.cnpj,
@@ -85,8 +94,9 @@ async function atualizar(req, res, next) {
       diasFuncionamento: body.dias_funcionamento,
       horaAbertura: body.hora_abertura,
       horaFechamento: body.hora_fechamento,
+      cnpjInformado: Object.prototype.hasOwnProperty.call(body, 'cnpj'),
     });
-    if (!empresa) return res.status(404).json({ erro: 'Cadastro da empresa nao encontrado' });
+    if (!empresa) return res.status(404).json({ erro: 'Cadastro da empresa não encontrado' });
     res.json(empresa);
   } catch (err) {
     next(err);

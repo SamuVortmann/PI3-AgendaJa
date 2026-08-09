@@ -2,7 +2,8 @@ const pool = require('../../config/db');
 
 const SELECT_BASE = `
   SELECT a.id, a.empresa_id, a.cliente_id, a.profissional_id, a.servico_id,
-         a.data_hora_inicio, a.data_hora_fim, a.status, a.lembrete_enviado, a.criado_em,
+         a.data_hora_inicio, a.data_hora_fim, a.status, a.lembrete_enviado,
+         a.reagendado_em, a.criado_em,
          u.nome AS cliente_nome, u.email AS cliente_email, u.telefone AS cliente_telefone,
          p.nome AS profissional_nome, s.nome AS servico_nome, s.duracao_minutos, s.preco,
          e.nome AS empresa_nome, e.endereco AS empresa_endereco
@@ -98,9 +99,14 @@ async function updateStatus(id, status) {
 async function reagendar(id, { dataHoraInicio, dataHoraFim }) {
   const result = await pool.query(
     `UPDATE agendamentos
-     SET data_hora_inicio = $2, data_hora_fim = $3, status = 'pendente', lembrete_enviado = FALSE
+     SET data_hora_inicio = $2,
+         data_hora_fim = $3,
+         status = 'pendente',
+         lembrete_enviado = FALSE,
+         reagendado_em = CURRENT_TIMESTAMP
      WHERE id = $1
-     RETURNING id, cliente_id, profissional_id, servico_id, data_hora_inicio, data_hora_fim, status`,
+     RETURNING id, cliente_id, profissional_id, servico_id, data_hora_inicio,
+               data_hora_fim, status, reagendado_em`,
     [id, dataHoraInicio, dataHoraFim]
   );
   return result.rows[0];
@@ -108,7 +114,7 @@ async function reagendar(id, { dataHoraInicio, dataHoraFim }) {
 
 async function findAgendamentosDoDia(profissionalId, data) {
   const result = await pool.query(
-    `SELECT data_hora_inicio, data_hora_fim
+    `SELECT id, data_hora_inicio, data_hora_fim
      FROM agendamentos
      WHERE profissional_id = $1
        AND status != 'cancelado'

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
+import '../services/auth_session.dart';
+import '../services/api_client.dart';
 import 'meus-agendamentos.dart';
 import 'notificacoes.dart';
 
@@ -17,6 +19,7 @@ class PerfilPage extends StatefulWidget {
 class _PerfilPageState extends State<PerfilPage> {
   late TextEditingController _nomeController;
   late TextEditingController _telefoneController;
+  bool _salvando = false;
 
   @override
   void initState() {
@@ -55,6 +58,40 @@ class _PerfilPageState extends State<PerfilPage> {
       await AuthService.instance.logout();
       if (mounted)
         Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+    }
+  }
+
+  Future<void> _salvar() async {
+    final nome = _nomeController.text.trim();
+    if (nome.isEmpty || _salvando) {
+      if (nome.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Informe seu nome.')));
+      }
+      return;
+    }
+    setState(() => _salvando = true);
+    try {
+      await AuthService.instance.atualizarPerfil(
+        nome: nome,
+        telefone: _telefoneController.text.trim().isEmpty
+            ? null
+            : _telefoneController.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Perfil atualizado com sucesso.')),
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _salvando = false);
     }
   }
 
@@ -129,11 +166,32 @@ class _PerfilPageState extends State<PerfilPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      TextFormField(
+                        readOnly: true,
+                        initialValue: AuthSession.instance.usuario?.email ?? '',
+                        decoration: const InputDecoration(
+                          labelText: 'E-mail',
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       TextField(
                         controller: _telefoneController,
                         decoration: const InputDecoration(
                           labelText: 'Telefone',
                           prefixIcon: Icon(Icons.phone_outlined),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _salvando ? null : _salvar,
+                          icon: const Icon(Icons.save_outlined),
+                          label: Text(
+                            _salvando ? 'Salvando...' : 'Salvar alterações',
+                          ),
                         ),
                       ),
 

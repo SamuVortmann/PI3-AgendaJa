@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import 'homecliente.dart';
-import 'cadastro_empresa.dart'; 
+import 'cadastro_empresa.dart';
 import 'login_pg.dart'; // Importação da página de login
 
 class CadastroPage extends StatefulWidget {
@@ -57,7 +57,7 @@ class _CadastroPageState extends State<CadastroPage> {
 
     setState(() => _carregando = true);
     try {
-      // Nota: Se o erro "relação de empresa não existente" persistir, 
+      // Nota: Se o erro "relação de empresa não existente" persistir,
       // verifique se o backend exige um empresa_id inicial para o tipo 'empresa'.
       await AuthService.instance.register(
         nome: nome,
@@ -187,7 +187,7 @@ class _CadastroPageState extends State<CadastroPage> {
                             ),
                             const SizedBox(height: 22),
                             _campo(
-                              titulo: 'Email:',
+                              titulo: 'E-mail:',
                               hint: 'seuemail@gmail.com',
                               controller: emailController,
                             ),
@@ -285,11 +285,12 @@ class _CadastroPageState extends State<CadastroPage> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () =>
-                                      Navigator.pushReplacement(
-                                        context, 
-                                        MaterialPageRoute(builder: (context) => const LoginPg())
-                                      ),
+                                  onTap: () => Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoginPg(),
+                                    ),
+                                  ),
                                   child: const Text(
                                     "Entrar",
                                     style: TextStyle(

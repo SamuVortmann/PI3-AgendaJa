@@ -79,4 +79,22 @@ class DisponibilidadeService {
   Future<void> excluir(int id) async {
     await _api.delete('/admin/disponibilidades/$id', auth: true);
   }
+
+  Future<DisponibilidadeSlot> atualizar(
+    int id, {
+    required int diaSemana,
+    required String horaInicio,
+    required String horaFim,
+  }) async {
+    final data = await _api.put(
+      '/admin/disponibilidades/$id',
+      auth: true,
+      body: {
+        'dia_semana': diaSemana,
+        'hora_inicio': horaInicio,
+        'hora_fim': horaFim,
+      },
+    );
+    return DisponibilidadeSlot.fromJson(data as Map<String, dynamic>);
+  }
 }

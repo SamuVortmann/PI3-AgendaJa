@@ -2,6 +2,8 @@ const agendamentoModel = require('../models/agendamentoModel');
 const servicoModel = require('../models/servicoModel');
 const profissionalModel = require('../models/profissionalModel');
 const whatsappService = require('../services/whatsappService');
+const { calcularHorariosLivres } = require('../services/disponibilidadeService');
+const { formatarDataNoFuso } = require('../utils/dateTime');
 
 const DUAS_HORAS_MS = 2 * 60 * 60 * 1000;
 
@@ -30,7 +32,7 @@ async function criar(req, res, next) {
     }
 
     if (Number(profissional.empresa_id) !== Number(servico.empresa_id)) {
-      return res.status(400).json({ erro: 'Profissional e servico pertencem a empresas diferentes' });
+      return res.status(400).json({ erro: 'Profissional e serviço pertencem a empresas diferentes' });
     }
 
     const servicosDoProf = await profissionalModel.findServicosByProfissional(profissionalId);
@@ -40,10 +42,22 @@ async function criar(req, res, next) {
     }
 
     const dataHoraInicio = new Date(inicio);
+    if (Number.isNaN(dataHoraInicio.getTime())) {
+      return res.status(400).json({ erro: 'Data e hora inválidas' });
+    }
     const dataHoraFim = new Date(dataHoraInicio.getTime() + servico.duracao_minutos * 60000);
 
     if (dataHoraInicio <= new Date()) {
       return res.status(400).json({ erro: 'Não é possível agendar em horário passado' });
+    }
+
+    const dataLocal = formatarDataNoFuso(dataHoraInicio);
+    const horariosLivres = await calcularHorariosLivres(profissionalId, servicoId, dataLocal);
+    const horarioPermitido = horariosLivres.some(
+      (slot) => new Date(slot.data_hora_inicio).getTime() === dataHoraInicio.getTime()
+    );
+    if (!horarioPermitido) {
+      return res.status(409).json({ erro: 'Horário fora da disponibilidade do profissional' });
     }
 
     const conflito = await agendamentoModel.hasConflito(

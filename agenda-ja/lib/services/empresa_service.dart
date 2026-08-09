@@ -83,4 +83,29 @@ class EmpresaService {
     final data = await _api.get('/empresas/minha', auth: true);
     return Empresa.fromJson(data as Map<String, dynamic>);
   }
+
+  Future<Empresa> atualizarMinhaEmpresa({
+    required String nome,
+    String? cnpj,
+    required String endereco,
+    required String telefone,
+    required List<int> diasFuncionamento,
+    required String horaAbertura,
+    required String horaFechamento,
+  }) async {
+    final data = await _api.put(
+      '/empresas/minha',
+      auth: true,
+      body: {
+        'nome': nome,
+        'cnpj': cnpj,
+        'endereco': endereco,
+        'telefone': telefone,
+        'dias_funcionamento': diasFuncionamento,
+        'hora_abertura': horaAbertura,
+        'hora_fechamento': horaFechamento,
+      },
+    );
+    return Empresa.fromJson(data as Map<String, dynamic>);
+  }
 }

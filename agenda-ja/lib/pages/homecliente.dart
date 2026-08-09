@@ -53,6 +53,14 @@ class _HomeClientePageState extends State<HomeClientePage> {
     }
   }
 
+  Future<void> _abrir(Widget pagina) async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => pagina));
+    if (mounted) {
+      setState(() => _selectedIndex = 0);
+      await _carregar();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final usuario = AuthSession.instance.usuario!;
@@ -210,26 +218,15 @@ class _HomeClientePageState extends State<HomeClientePage> {
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() => _selectedIndex = index);
-          if (index == 1)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MeusAgendamentosPage()),
+          if (index == 1) {
+            _abrir(const MeusAgendamentosPage());
+          } else if (index == 2) {
+            _abrir(const NotificacoesPage());
+          } else if (index == 3) {
+            _abrir(
+              PerfilPage(nome: usuario.nome, telefone: usuario.telefone ?? ''),
             );
-          if (index == 2)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NotificacoesPage()),
-            ); // LIGAÇÃO CORRIGIDA
-          if (index == 3)
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PerfilPage(
-                  nome: usuario.nome,
-                  telefone: usuario.telefone ?? '',
-                ),
-              ),
-            );
+          }
         },
         items: const [
           BottomNavigationBarItem(

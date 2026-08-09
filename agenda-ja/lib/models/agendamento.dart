@@ -28,7 +28,10 @@ class Agendamento {
   final DateTime dataHoraInicio;
   final DateTime dataHoraFim;
   final String status;
+  final DateTime? reagendadoEm;
+  final DateTime criadoEm;
   final String? clienteNome;
+  final String? clienteEmail;
   final String? clienteTelefone;
   final String? profissionalNome;
   final String? servicoNome;
@@ -45,7 +48,10 @@ class Agendamento {
     required this.dataHoraInicio,
     required this.dataHoraFim,
     required this.status,
+    this.reagendadoEm,
+    required this.criadoEm,
     this.clienteNome,
+    this.clienteEmail,
     this.clienteTelefone,
     this.profissionalNome,
     this.servicoNome,
@@ -64,7 +70,12 @@ class Agendamento {
       dataHoraInicio: parseJsonDate(json['data_hora_inicio']),
       dataHoraFim: parseJsonDate(json['data_hora_fim']),
       status: json['status'].toString(),
+      reagendadoEm: json['reagendado_em'] != null
+          ? parseJsonDate(json['reagendado_em'])
+          : null,
+      criadoEm: parseJsonDate(json['criado_em']),
       clienteNome: parseJsonString(json['cliente_nome']),
+      clienteEmail: parseJsonString(json['cliente_email']),
       clienteTelefone: parseJsonString(json['cliente_telefone']),
       profissionalNome: parseJsonString(json['profissional_nome']),
       servicoNome: parseJsonString(json['servico_nome']),
@@ -78,6 +89,25 @@ class Agendamento {
   }
 
   bool get isCancelado => status == 'cancelado';
+
+  bool get foiReagendado => reagendadoEm != null;
+
+  DateTime get ultimaMovimentacao => reagendadoEm ?? criadoEm;
+
+  String get statusLabel {
+    switch (status) {
+      case 'pendente':
+        return 'Pendente';
+      case 'confirmado':
+        return 'Confirmado';
+      case 'cancelado':
+        return 'Cancelado';
+      default:
+        return status.isEmpty
+            ? 'Sem status'
+            : '${status[0].toUpperCase()}${status.substring(1)}';
+    }
+  }
 
   bool get isFuturo {
     if (isCancelado) return false;

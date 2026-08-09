@@ -34,4 +34,15 @@ async function create({ nome, email, senhaHash, telefone, perfil = 'cliente' }) 
   return result.rows[0];
 }
 
-module.exports = { findByEmail, findById, create };
+async function updateProfile(id, { nome, telefone }) {
+  const result = await pool.query(
+    `UPDATE usuarios
+     SET nome = $2, telefone = $3
+     WHERE id = $1
+     RETURNING id, nome, email, telefone, perfil, criado_em`,
+    [id, nome, telefone || null]
+  );
+  return result.rows[0];
+}
+
+module.exports = { findByEmail, findById, create, updateProfile };

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/agendamento.dart';
-import 'homecliente.dart';
+import 'meus-agendamentos.dart';
 
 class ConfirmacaoAgendamentoPage extends StatefulWidget {
-  final Agendamento? agendamento;
+  final Agendamento agendamento;
 
-  const ConfirmacaoAgendamentoPage({super.key, this.agendamento});
+  const ConfirmacaoAgendamentoPage({super.key, required this.agendamento});
 
   @override
   State<ConfirmacaoAgendamentoPage> createState() =>
@@ -16,12 +16,10 @@ class ConfirmacaoAgendamentoPage extends StatefulWidget {
 
 class _ConfirmacaoAgendamentoPageState
     extends State<ConfirmacaoAgendamentoPage> {
-  Agendamento? get _agendamento => widget.agendamento;
-  String get _servicoNome => _agendamento?.servicoNome ?? 'Serviço';
+  String get _servicoNome => widget.agendamento.servicoNome ?? 'Serviço';
   String get _profissionalNome =>
-      _agendamento?.profissionalNome ?? 'Profissional';
-  DateTime get _dataAgendamento =>
-      _agendamento?.dataHoraInicio ?? DateTime.now();
+      widget.agendamento.profissionalNome ?? 'Profissional';
+  DateTime get _dataAgendamento => widget.agendamento.dataHoraInicio;
   String get _horaAgendamento =>
       DateFormat('HH:mm').format(_dataAgendamento.toLocal());
 
@@ -117,7 +115,7 @@ class _ConfirmacaoAgendamentoPageState
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const HomeClientePage()),
+                MaterialPageRoute(builder: (_) => const MeusAgendamentosPage()),
                 (route) => false,
               );
             },

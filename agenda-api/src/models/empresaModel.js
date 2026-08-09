@@ -43,11 +43,11 @@ async function create({ usuarioId, nome, cnpj, endereco, telefone, diasFuncionam
   return result.rows[0];
 }
 
-async function updateByUsuarioId(usuarioId, { nome, cnpj, endereco, telefone, diasFuncionamento, horaAbertura, horaFechamento }) {
+async function updateByUsuarioId(usuarioId, { nome, cnpj, endereco, telefone, diasFuncionamento, horaAbertura, horaFechamento, cnpjInformado = false }) {
   const result = await pool.query(
     `UPDATE empresas
      SET nome = COALESCE($2, nome),
-         cnpj = COALESCE($3, cnpj),
+         cnpj = CASE WHEN $9 THEN $3 ELSE cnpj END,
          endereco = COALESCE($4, endereco),
          telefone = COALESCE($5, telefone),
          dias_funcionamento = COALESCE($6, dias_funcionamento),
@@ -56,7 +56,7 @@ async function updateByUsuarioId(usuarioId, { nome, cnpj, endereco, telefone, di
      WHERE usuario_id = $1
      RETURNING id, usuario_id, nome, cnpj, endereco, telefone,
                dias_funcionamento, hora_abertura, hora_fechamento, ativo, criado_em`,
-    [usuarioId, nome, cnpj, endereco, telefone, diasFuncionamento, horaAbertura, horaFechamento]
+    [usuarioId, nome, cnpj || null, endereco, telefone, diasFuncionamento, horaAbertura, horaFechamento, cnpjInformado]
   );
   return result.rows[0];
 }

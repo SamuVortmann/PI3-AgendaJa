@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/agendamento.dart';
 import '../services/agendamento_service.dart';
-// IMPORTANTE: Certifique-se de que o caminho do import está correto para o seu projeto
-import 'detalhes_clientes.dart'; 
+import 'detalhes_clientes.dart';
 
 class ListaClientesPage extends StatefulWidget {
   const ListaClientesPage({super.key});
@@ -13,18 +12,10 @@ class ListaClientesPage extends StatefulWidget {
 }
 
 class _ListaClientesPageState extends State<ListaClientesPage> {
-  final TextEditingController _buscaController = TextEditingController();
+  final _buscaController = TextEditingController();
   List<Agendamento> _agendamentos = [];
   bool _carregando = true;
   String? _erro;
-
-  // DADOS ESTÁTICOS CONFORME O WIREFRAME
-  final List<Map<String, String>> _clientesEstaticos = [
-    {'nome': 'Maria Silva', 'telefone': '(49) 90000-1111'},
-    {'nome': 'João Pereira', 'telefone': '(49) 90000-2222'},
-    {'nome': 'Ana Costa', 'telefone': '(49) 90000-3333'},
-    {'nome': 'Bia Lima', 'telefone': '(49) 90000-4444'},
-  ];
 
   @override
   void initState() {
@@ -38,7 +29,9 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
       _erro = null;
     });
     try {
-      final agendamentos = await AgendamentoService.instance.listarAdmin(visao: 'todos');
+      final agendamentos = await AgendamentoService.instance.listarAdmin(
+        visao: 'todos',
+      );
       if (mounted) setState(() => _agendamentos = agendamentos);
     } catch (e) {
       if (mounted) setState(() => _erro = e.toString());
@@ -47,34 +40,30 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
     }
   }
 
-  List<dynamic> get _listaExibicao {
-    final busca = _buscaController.text.trim().toLowerCase();
-    
-    // Processa clientes do banco
+  List<Agendamento> get _clientes {
     final unicos = <int, Agendamento>{};
-    for (final ag in _agendamentos) {
-      unicos[ag.clienteId] = ag;
+    for (final item in _agendamentos) {
+      unicos[item.clienteId] = item;
     }
-    
-    List<dynamic> resultado = [];
-    
-    // Adiciona estáticos filtrados
-    for (var c in _clientesEstaticos) {
-      if (busca.isEmpty || c['nome']!.toLowerCase().contains(busca)) {
-        resultado.add(c);
-      }
-    }
-    
-    // Adiciona dinâmicos filtrados
-    for (var ag in unicos.values) {
-      if (busca.isEmpty || (ag.clienteNome?.toLowerCase().contains(busca) ?? false)) {
-        if (!_clientesEstaticos.any((e) => e['nome'] == ag.clienteNome)) {
-          resultado.add(ag);
-        }
-      }
-    }
-
+    final busca = _buscaController.text.trim().toLowerCase();
+    final resultado = unicos.values.where((cliente) {
+      return busca.isEmpty ||
+          (cliente.clienteNome?.toLowerCase().contains(busca) ?? false) ||
+          (cliente.clienteEmail?.toLowerCase().contains(busca) ?? false) ||
+          (cliente.clienteTelefone?.contains(busca) ?? false);
+    }).toList();
+    resultado.sort(
+      (a, b) => (a.clienteNome ?? '').compareTo(b.clienteNome ?? ''),
+    );
     return resultado;
+  }
+
+  List<Agendamento> _historico(int clienteId) {
+    final itens = _agendamentos
+        .where((item) => item.clienteId == clienteId)
+        .toList();
+    itens.sort((a, b) => b.dataHoraInicio.compareTo(a.dataHoraInicio));
+    return itens;
   }
 
   @override
@@ -87,138 +76,87 @@ class _ListaClientesPageState extends State<ListaClientesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF111934),
-      body: SafeArea(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF111934),
+        foregroundColor: Colors.white,
+        title: const Text('Clientes'),
+      ),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(50)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
         child: Column(
           children: [
-            // CABEÇALHO AZUL COM BOTÃO VOLTAR
-            Container(
-              width: double.infinity,
-              height: 100,
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              color: const Color(0xFF111934),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context), 
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24)
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Clientes',
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(45)),
-                ),
-                child: Column(
-                  children: [
-                    // BARRA DE BUSCA
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(25, 30, 25, 10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: TextField(
-                          controller: _buscaController,
-                          onChanged: (_) => setState(() {}),
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.search, color: Colors.grey),
-                            hintText: 'Buscar cliente',
-                            border: InputBorder.none,
-                            hintStyle: TextStyle(color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    Expanded(
-                      child: _carregando && _agendamentos.isEmpty
-                          ? const Center(child: CircularProgressIndicator())
-                          : RefreshIndicator(
-                              onRefresh: _carregar,
-                              child: ListView.builder(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                itemCount: _listaExibicao.length,
-                                itemBuilder: (context, index) {
-                                  final item = _listaExibicao[index];
-                                  String nome = '';
-                                  String telefone = '';
-                                  
-                                  if (item is Map) {
-                                    nome = item['nome']!;
-                                    telefone = item['telefone']!;
-                                  } else if (item is Agendamento) {
-                                    nome = item.clienteNome ?? 'Cliente';
-                                    telefone = item.clienteTelefone ?? 'Sem telefone';
-                                  }
-
-                                  return _buildClienteCard(nome, telefone, item);
-                                },
-                              ),
-                            ),
-                    ),
-                  ],
+            TextField(
+              controller: _buscaController,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: 'Buscar cliente',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            Expanded(child: _conteudo()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildClienteCard(String nome, String telefone, dynamic originalItem) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: ListTile(
-        onTap: () {
-          // NAVEGAÇÃO ATIVADA PARA DETALHES
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => DetalhesClientePage(nomeCliente: nome),
+  Widget _conteudo() {
+    if (_carregando) return const Center(child: CircularProgressIndicator());
+    if (_erro != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_erro!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _carregar,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_clientes.isEmpty)
+      return const Center(child: Text('Nenhum cliente encontrado.'));
+    return RefreshIndicator(
+      onRefresh: _carregar,
+      child: ListView.builder(
+        itemCount: _clientes.length,
+        itemBuilder: (_, index) {
+          final cliente = _clientes[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              leading: const CircleAvatar(child: Icon(Icons.person)),
+              title: Text(cliente.clienteNome ?? 'Cliente'),
+              subtitle: Text(
+                cliente.clienteTelefone ??
+                    cliente.clienteEmail ??
+                    'Sem contato',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DetalhesClientePage(
+                    cliente: cliente,
+                    historico: _historico(cliente.clienteId),
+                  ),
+                ),
+              ),
             ),
           );
         },
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-        leading: CircleAvatar(
-          radius: 25,
-          backgroundColor: Colors.grey.shade100,
-          child: Icon(Icons.person, color: Colors.grey.shade400),
-        ),
-        title: Text(
-          nome,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111934)),
-        ),
-        subtitle: Text(
-          telefone,
-          style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-        ),
-        trailing: const Icon(Icons.arrow_back_ios, size: 14, color: Colors.grey),
       ),
     );
   }

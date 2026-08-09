@@ -44,6 +44,26 @@ async function create({ profissionalId, diaSemana, horaInicio, horaFim }) {
   return result.rows[0];
 }
 
+async function hasConflito(profissionalId, diaSemana, horaInicio, horaFim, excludeId = null) {
+  const params = [profissionalId, diaSemana, horaInicio, horaFim];
+  let excludeClause = '';
+  if (excludeId) {
+    params.push(excludeId);
+    excludeClause = `AND id != $${params.length}`;
+  }
+  const result = await pool.query(
+    `SELECT id FROM disponibilidades
+     WHERE profissional_id = $1
+       AND dia_semana = $2
+       AND hora_inicio < $4::time
+       AND hora_fim > $3::time
+       ${excludeClause}
+     LIMIT 1`,
+    params
+  );
+  return result.rows.length > 0;
+}
+
 async function update(id, { diaSemana, horaInicio, horaFim }) {
   const result = await pool.query(
     `UPDATE disponibilidades
@@ -65,4 +85,12 @@ async function remove(id) {
   return result.rows[0];
 }
 
-module.exports = { findByProfissional, findByProfissionalAndDia, findById, create, update, remove };
+module.exports = {
+  findByProfissional,
+  findByProfissionalAndDia,
+  findById,
+  hasConflito,
+  create,
+  update,
+  remove,
+};

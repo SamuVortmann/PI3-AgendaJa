@@ -3,6 +3,13 @@ const servicoModel = require('../models/servicoModel');
 const profissionalModel = require('../models/profissionalModel');
 const disponibilidadeModel = require('../models/disponibilidadeModel');
 const whatsappService = require('../services/whatsappService');
+const { calcularHorariosLivres } = require('../services/disponibilidadeService');
+const {
+  adicionarDias,
+  formatarDataNoFuso,
+  validarDataIso,
+  validarHorario,
+} = require('../utils/dateTime');
 
 function empresaDoGestor(req) {
   return req.usuario.empresa_id || null;
@@ -12,50 +19,71 @@ function empresaParaCriacao(req) {
   return empresaDoGestor(req) || Number(req.body?.empresa_id) || null;
 }
 
-function formatLocalDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
 function parsePeriodo(query) {
   const { data_inicio: dataInicio, data_fim: dataFim, visao } = query;
 
+  if ((dataInicio && !dataFim) || (!dataInicio && dataFim)) {
+    return { erro: 'Informe data_inicio e data_fim em conjunto' };
+  }
+
   if (dataInicio && dataFim) {
+    if (!validarDataIso(dataInicio) || !validarDataIso(dataFim) || dataInicio > dataFim) {
+      return { erro: 'Período de datas inválido' };
+    }
     return { dataInicio, dataFim };
   }
 
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  const hoje = formatarDataNoFuso(new Date());
 
   if (visao === 'todos') {
     return { dataInicio: null, dataFim: null };
   }
 
   if (visao === 'semana') {
-    const fim = new Date(hoje);
-    fim.setDate(fim.getDate() + 6);
+    const diaSemana = new Date(`${hoje}T12:00:00Z`).getUTCDay();
+    const diasDesdeSegunda = (diaSemana + 6) % 7;
+    const inicioSemana = adicionarDias(hoje, -diasDesdeSegunda);
     return {
-      dataInicio: formatLocalDate(hoje),
-      dataFim: formatLocalDate(fim),
+      dataInicio: inicioSemana,
+      dataFim: adicionarDias(inicioSemana, 6),
     };
   }
 
   return {
-    dataInicio: formatLocalDate(hoje),
-    dataFim: formatLocalDate(hoje),
+    dataInicio: hoje,
+    dataFim: hoje,
   };
+}
+
+function validarFaixaDisponibilidade(diaSemana, horaInicio, horaFim) {
+  const dia = Number(diaSemana);
+  const inicio = horaInicio?.slice(0, 5);
+  const fim = horaFim?.slice(0, 5);
+  if (!Number.isInteger(dia) || dia < 0 || dia > 6) return 'Dia da semana inválido';
+  if (!validarHorario(inicio) || !validarHorario(fim)) return 'Horários inválidos';
+  if (inicio >= fim) return 'O horário final deve ser posterior ao inicial';
+  return null;
+}
+
+async function servicosPertencemAEmpresa(servicoIds, empresaId) {
+  const servicos = await Promise.all(servicoIds.map((id) => servicoModel.findById(id)));
+  return servicos.every(
+    (servico) => servico && (!empresaId || Number(servico.empresa_id) === Number(empresaId))
+  );
 }
 
 async function listarAgendamentos(req, res, next) {
   try {
-    const { dataInicio, dataFim } = parsePeriodo(req.query);
+    const periodo = parsePeriodo(req.query);
+    if (periodo.erro) return res.status(400).json({ erro: periodo.erro });
     const { status } = req.query;
+    if (status && !['pendente', 'confirmado', 'cancelado'].includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido' });
+    }
 
     const agendamentos = await agendamentoModel.findAll({
-      dataInicio,
-      dataFim,
+      dataInicio: periodo.dataInicio,
+      dataFim: periodo.dataFim,
       status,
       empresaId: empresaDoGestor(req),
     });
@@ -76,13 +104,30 @@ async function atualizarAgendamento(req, res, next) {
     }
     const empresaId = empresaDoGestor(req);
     if (empresaId && Number(agendamento.empresa_id) !== Number(empresaId)) {
-      return res.status(404).json({ erro: 'Agendamento nao encontrado' });
+      return res.status(404).json({ erro: 'Agendamento não encontrado' });
     }
 
     if (novaDataInicio) {
       const servico = await servicoModel.findById(agendamento.servico_id);
       const inicio = new Date(novaDataInicio);
+      if (Number.isNaN(inicio.getTime()) || inicio <= new Date()) {
+        return res.status(400).json({ erro: 'Informe uma data futura válida' });
+      }
       const fim = new Date(inicio.getTime() + servico.duracao_minutos * 60000);
+
+      const dataLocal = formatarDataNoFuso(inicio);
+      const horariosLivres = await calcularHorariosLivres(
+        agendamento.profissional_id,
+        agendamento.servico_id,
+        dataLocal,
+        id
+      );
+      const horarioPermitido = horariosLivres.some(
+        (slot) => new Date(slot.data_hora_inicio).getTime() === inicio.getTime()
+      );
+      if (!horarioPermitido) {
+        return res.status(409).json({ erro: 'Horário fora da disponibilidade do profissional' });
+      }
 
       const conflito = await agendamentoModel.hasConflito(
         agendamento.profissional_id,
@@ -112,7 +157,7 @@ async function atualizarAgendamento(req, res, next) {
     const atualizado = await agendamentoModel.findById(id);
 
     if (novaDataInicio) {
-      await whatsappService.enviarConfirmacaoAgendamento(atualizado);
+      await whatsappService.enviarNotificacaoReagendamento(atualizado);
     }
 
     res.json(atualizado);
@@ -147,13 +192,19 @@ async function criarServico(req, res, next) {
   try {
     const { nome, descricao, duracao_minutos: duracaoMinutos, preco } = req.body || {};
 
-    if (!nome || !duracaoMinutos || preco === undefined) {
+    if (
+      !nome ||
+      !Number.isInteger(Number(duracaoMinutos)) ||
+      Number(duracaoMinutos) <= 0 ||
+      !Number.isFinite(Number(preco)) ||
+      Number(preco) < 0
+    ) {
       return res.status(400).json({ erro: 'Nome, duração e preço são obrigatórios' });
     }
 
     const empresaId = empresaParaCriacao(req);
     if (!empresaId) {
-      return res.status(400).json({ erro: 'empresa_id e obrigatorio' });
+      return res.status(400).json({ erro: 'empresa_id é obrigatório' });
     }
 
     const servico = await servicoModel.create({
@@ -172,6 +223,18 @@ async function criarServico(req, res, next) {
 async function atualizarServico(req, res, next) {
   try {
     const { nome, descricao, duracao_minutos: duracaoMinutos, preco, ativo } = req.body || {};
+    if (nome !== undefined && !String(nome).trim()) {
+      return res.status(400).json({ erro: 'O nome não pode ficar vazio' });
+    }
+    if (
+      duracaoMinutos !== undefined &&
+      (!Number.isInteger(Number(duracaoMinutos)) || Number(duracaoMinutos) <= 0)
+    ) {
+      return res.status(400).json({ erro: 'Duração inválida' });
+    }
+    if (preco !== undefined && (!Number.isFinite(Number(preco)) || Number(preco) < 0)) {
+      return res.status(400).json({ erro: 'Preço inválido' });
+    }
     const servico = await servicoModel.update(req.params.id, empresaDoGestor(req), {
       nome,
       descricao,
@@ -219,12 +282,15 @@ async function criarProfissional(req, res, next) {
   try {
     const { nome, email, telefone, servico_ids: servicoIds } = req.body || {};
 
-    if (!nome) {
-      return res.status(400).json({ erro: 'Nome é obrigatório' });
+    if (!nome || !Array.isArray(servicoIds) || servicoIds.length === 0) {
+      return res.status(400).json({ erro: 'O nome e ao menos um serviço são obrigatórios' });
     }
     const empresaId = empresaParaCriacao(req);
     if (!empresaId) {
-      return res.status(400).json({ erro: 'empresa_id e obrigatorio' });
+      return res.status(400).json({ erro: 'empresa_id é obrigatório' });
+    }
+    if (!(await servicosPertencemAEmpresa(servicoIds, empresaId))) {
+      return res.status(400).json({ erro: 'Um ou mais serviços não pertencem à empresa' });
     }
 
     const profissional = await profissionalModel.create({
@@ -243,6 +309,18 @@ async function criarProfissional(req, res, next) {
 async function atualizarProfissional(req, res, next) {
   try {
     const { servico_ids: servicoIds, ...dados } = req.body || {};
+    if (dados.nome !== undefined && !String(dados.nome).trim()) {
+      return res.status(400).json({ erro: 'O nome não pode ficar vazio' });
+    }
+    if (servicoIds !== undefined && (!Array.isArray(servicoIds) || servicoIds.length === 0)) {
+      return res.status(400).json({ erro: 'Selecione ao menos um serviço' });
+    }
+    if (
+      servicoIds !== undefined &&
+      !(await servicosPertencemAEmpresa(servicoIds, empresaDoGestor(req)))
+    ) {
+      return res.status(400).json({ erro: 'Um ou mais serviços não pertencem à empresa' });
+    }
     const profissional = await profissionalModel.update(req.params.id, empresaDoGestor(req), {
       ...dados,
       servicoIds,
@@ -281,7 +359,7 @@ async function listarDisponibilidades(req, res, next) {
     const profissional = await profissionalModel.findById(profissionalId);
     const empresaId = empresaDoGestor(req);
     if (!profissional || (empresaId && Number(profissional.empresa_id) !== Number(empresaId))) {
-      return res.status(404).json({ erro: 'Profissional nao encontrado' });
+      return res.status(404).json({ erro: 'Profissional não encontrado' });
     }
 
     const disponibilidades = await disponibilidadeModel.findByProfissional(profissionalId);
@@ -305,12 +383,19 @@ async function criarDisponibilidade(req, res, next) {
         erro: 'profissional_id, dia_semana, hora_inicio e hora_fim são obrigatórios',
       });
     }
+    const erroFaixa = validarFaixaDisponibilidade(diaSemana, horaInicio, horaFim);
+    if (erroFaixa) return res.status(400).json({ erro: erroFaixa });
     const profissional = await profissionalModel.findById(profissionalId);
     const empresaId = empresaDoGestor(req);
     if (!profissional || (empresaId && Number(profissional.empresa_id) !== Number(empresaId))) {
-      return res.status(404).json({ erro: 'Profissional nao encontrado' });
+      return res.status(404).json({ erro: 'Profissional não encontrado' });
     }
 
+    if (await disponibilidadeModel.hasConflito(profissionalId, diaSemana, horaInicio, horaFim)) {
+      return res.status(409).json({
+        erro: 'Esta faixa de horário conflita com outra disponibilidade',
+      });
+    }
     const disponibilidade = await disponibilidadeModel.create({
       profissionalId,
       diaSemana,
@@ -328,13 +413,31 @@ async function atualizarDisponibilidade(req, res, next) {
     const atual = await disponibilidadeModel.findById(req.params.id);
     const empresaId = empresaDoGestor(req);
     if (!atual || (empresaId && Number(atual.empresa_id) !== Number(empresaId))) {
-      return res.status(404).json({ erro: 'Disponibilidade nao encontrada' });
+      return res.status(404).json({ erro: 'Disponibilidade não encontrada' });
     }
     const body = req.body || {};
+    const diaSemana = body.dia_semana ?? atual.dia_semana;
+    const horaInicio = body.hora_inicio ?? atual.hora_inicio;
+    const horaFim = body.hora_fim ?? atual.hora_fim;
+    const erroFaixa = validarFaixaDisponibilidade(diaSemana, horaInicio, horaFim);
+    if (erroFaixa) return res.status(400).json({ erro: erroFaixa });
+    if (
+      await disponibilidadeModel.hasConflito(
+        atual.profissional_id,
+        diaSemana,
+        horaInicio,
+        horaFim,
+        req.params.id
+      )
+    ) {
+      return res.status(409).json({
+        erro: 'Esta faixa de horário conflita com outra disponibilidade',
+      });
+    }
     const disponibilidade = await disponibilidadeModel.update(req.params.id, {
-      diaSemana: body.dia_semana,
-      horaInicio: body.hora_inicio,
-      horaFim: body.hora_fim,
+      diaSemana,
+      horaInicio,
+      horaFim,
     });
 
     if (!disponibilidade) {
@@ -352,7 +455,7 @@ async function excluirDisponibilidade(req, res, next) {
     const atual = await disponibilidadeModel.findById(req.params.id);
     const empresaId = empresaDoGestor(req);
     if (!atual || (empresaId && Number(atual.empresa_id) !== Number(empresaId))) {
-      return res.status(404).json({ erro: 'Disponibilidade nao encontrada' });
+      return res.status(404).json({ erro: 'Disponibilidade não encontrada' });
     }
     const disponibilidade = await disponibilidadeModel.remove(req.params.id);
     if (!disponibilidade) {

@@ -3,7 +3,10 @@ import 'package:intl/intl.dart';
 
 import '../models/agendamento.dart';
 import '../services/agendamento_service.dart';
+import '../services/auth_session.dart';
 import 'detalhes_agendamento.dart';
+import 'notificacoes.dart';
+import 'perfil_cliente.dart';
 
 class MeusAgendamentosPage extends StatefulWidget {
   const MeusAgendamentosPage({super.key});
@@ -104,7 +107,29 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() => _selectedIndex = index);
-          if (index == 0) Navigator.pop(context);
+          if (index == 0) {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/home_cliente',
+              (_) => false,
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificacoesPage()),
+            );
+          } else if (index == 3) {
+            final usuario = AuthSession.instance.usuario!;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PerfilPage(
+                  nome: usuario.nome,
+                  telefone: usuario.telefone ?? '',
+                ),
+              ),
+            );
+          }
         },
         items: const [
           BottomNavigationBarItem(
@@ -192,17 +217,7 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
         final alterado = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
-            builder: (_) => DetalhesAgendamentoPage(
-              agendamento: {
-                'id': ag.id,
-                'servico': ag.servicoNome ?? 'Serviço',
-                'profissional': ag.profissionalNome ?? 'Profissional',
-                'data': DateFormat(
-                  'dd/MM/yyyy HH:mm',
-                ).format(ag.dataHoraInicio.toLocal()),
-                'status': ag.status,
-              },
-            ),
+            builder: (_) => DetalhesAgendamentoPage(agendamento: ag),
           ),
         );
         if (alterado == true) _carregar();
@@ -242,11 +257,21 @@ class _MeusAgendamentosPageState extends State<MeusAgendamentosPage> {
                   ],
                 ),
                 Container(
-                  width: 60,
-                  height: 24,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor,
                     borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    ag.statusLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

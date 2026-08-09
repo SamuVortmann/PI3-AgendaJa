@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS empresas (
 
 -- Preserva os dados legados associando-os a empresa do primeiro administrador.
 INSERT INTO empresas (usuario_id, nome, endereco, telefone)
-SELECT u.id, COALESCE(u.nome, 'Empresa principal'), 'Endereco nao informado', COALESCE(u.telefone, 'Nao informado')
+SELECT u.id, COALESCE(u.nome, 'Empresa principal'), 'Endereço não informado', COALESCE(u.telefone, 'Não informado')
 FROM usuarios u
 WHERE u.perfil = 'admin'
   AND NOT EXISTS (SELECT 1 FROM empresas e WHERE e.usuario_id = u.id)
@@ -28,6 +28,7 @@ LIMIT 1;
 ALTER TABLE servicos ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
 ALTER TABLE profissionais ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id) ON DELETE CASCADE;
 ALTER TABLE agendamentos ADD COLUMN IF NOT EXISTS empresa_id INTEGER REFERENCES empresas(id);
+ALTER TABLE agendamentos ADD COLUMN IF NOT EXISTS reagendado_em TIMESTAMPTZ;
 
 UPDATE servicos SET empresa_id = (SELECT MIN(id) FROM empresas) WHERE empresa_id IS NULL;
 UPDATE profissionais SET empresa_id = (SELECT MIN(id) FROM empresas) WHERE empresa_id IS NULL;
@@ -43,7 +44,7 @@ BEGIN
   IF EXISTS (SELECT 1 FROM servicos WHERE empresa_id IS NULL)
      OR EXISTS (SELECT 1 FROM profissionais WHERE empresa_id IS NULL)
      OR EXISTS (SELECT 1 FROM agendamentos WHERE empresa_id IS NULL) THEN
-    RAISE EXCEPTION 'Nao foi possivel associar os dados existentes a uma empresa. Cadastre um administrador primeiro.';
+    RAISE EXCEPTION 'Não foi possível associar os dados existentes a uma empresa. Cadastre um administrador primeiro.';
   END IF;
 END $$;
 
